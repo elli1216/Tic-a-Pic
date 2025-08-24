@@ -1,6 +1,12 @@
+"use client";
+
 import React from 'react';
 import useThemeStore from '@/features/common/store/useThemeStore';
 
+/**
+ * Theme toggle component that switches between garden and forest themes.
+ * Uses a checkbox input with custom styling to provide a visual toggle.
+ */
 export default function ThemeToggle(): React.JSX.Element {
 
   const theme = useThemeStore((state) => state.theme);
