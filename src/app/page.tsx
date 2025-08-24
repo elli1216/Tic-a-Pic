@@ -1,16 +1,17 @@
 "use client";
 
 import dynamic from "next/dynamic";
-const ThemeToggle = dynamic(() => import("features/common/components/ThemeToggle"));
+const Header = dynamic(() => import("@/features/home/components/Header"));
+const HomeLayout = dynamic(() => import("./layout"));
 
 /**
  * Home page component for the photobooth application.
  */
-export default function Home() {
+export default function Home(): React.JSX.Element {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1>Photobooth</h1>
-      <ThemeToggle />
-    </div>
+    <HomeLayout>
+      <Header />
+      <h1>Main</h1>
+    </HomeLayout>
   );
 }
