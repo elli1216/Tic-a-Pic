@@ -2,7 +2,7 @@
 export interface Session {
   session_id: string;
   created_at: string;
-  device_info?: Record<string, any>;
+  device_info?: Record<string, unknown>;
 }
 
 export interface Layout {
