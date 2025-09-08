@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic';
 import React from 'react';
-const ThemeToggle = dynamic(() => import("features/common/components/ThemeToggle"));
+const ThemeToggle = dynamic(() => import("@/features/common/components/ThemeToggle"));
 
 export default function Header(): React.JSX.Element {
   return (
