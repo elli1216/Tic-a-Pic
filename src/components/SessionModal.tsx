@@ -6,11 +6,15 @@ interface SessionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateSession: (nickname?: string) => Promise<void>;
+  onLoadExistingSession: (sessionId: string) => Promise<void>;
 }
 
-export default function SessionModal({ isOpen, onClose, onCreateSession }: SessionModalProps) {
+export default function SessionModal({ isOpen, onClose, onCreateSession, onLoadExistingSession }: SessionModalProps) {
   const [nickname, setNickname] = useState('');
+  const [sessionId, setSessionId] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<'create' | 'existing'>('create');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +46,24 @@ export default function SessionModal({ isOpen, onClose, onCreateSession }: Sessi
     }
   };
 
+  const handleLoadExisting = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isLoading || !sessionId.trim()) return;
+
+    setIsLoading(true);
+    try {
+      await onLoadExistingSession(sessionId.trim().toUpperCase());
+      onClose();
+      // Reset form
+      setSessionId('');
+      setMode('create');
+    } catch (error) {
+      // Error handling is done in parent component
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -51,67 +73,151 @@ export default function SessionModal({ isOpen, onClose, onCreateSession }: Sessi
         <div className="text-center mb-6">
           <h3 className="text-2xl font-bold text-primary mb-2">Welcome to Tic a Pic! 📸</h3>
           <p className="text-base-content/70">
-            Want to save your photobooth session? Give it a fun nickname!
+            {mode === 'create'
+              ? "Want to save your photobooth session? Give it a fun nickname!"
+              : "Enter your session ID to continue where you left off!"
+            }
           </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Session Nickname (Optional)</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g., 'Darla's Birthday', 'Squad Goals'..."
-              className="input input-bordered input-primary w-full"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              maxLength={50}
-            />
-            <label className="label">
-              <span className="label-text-alt text-base-content/60">
-                This helps you find your photos later
-              </span>
-            </label>
-          </div>
+        {/* Mode Switcher */}
+        <div className="tabs tabs-boxed mb-6">
+          <button
+            className={`tab flex-1 ${mode === 'create' ? 'tab-active' : ''}`}
+            onClick={() => setMode('create')}
+            type="button"
+          >
+            Create New Session
+          </button>
+          <button
+            className={`tab flex-1 ${mode === 'existing' ? 'tab-active' : ''}`}
+            onClick={() => setMode('existing')}
+            type="button"
+          >
+            Use Existing Session
+          </button>
+        </div>
 
-          {/* Benefits */}
-          <div className="bg-base-200 rounded-lg p-4">
-            <h4 className="font-semibold mb-2">✨ With a session you get:</h4>
-            <ul className="text-sm space-y-1 text-base-content/80">
-              <li>• Save photos between visits</li>
-              <li>• Remember your layout preferences</li>
-              <li>• Get a unique session code</li>
-            </ul>
-          </div>
+        {/* Create Session Form */}
+        {mode === 'create' && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Session Nickname (Optional)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g., 'Darla's Birthday', 'Squad Goals'..."
+                className="input input-bordered input-primary w-full"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                maxLength={50}
+              />
+              <label className="label">
+                <span className="label-text-alt text-base-content/60">
+                  This helps you find your photos later
+                </span>
+              </label>
+            </div>
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-2 pt-4">
-            <button
-              type="submit"
-              className="btn btn-primary flex-1"
-              disabled={isCreating}
-            >
-              {isCreating ? (
-                <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  Creating...
-                </>
-              ) : (
-                'Create Session 🎉'
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={handleSkip}
-              className="btn btn-ghost flex-1"
-              disabled={isCreating}
-            >
-              {isCreating ? 'Creating...' : 'Skip for Now'}
-            </button>
-          </div>
-        </form>
+            {/* Benefits */}
+            <div className="bg-base-200 rounded-lg p-4">
+              <h4 className="font-semibold mb-2">✨ With a session you get:</h4>
+              <ul className="text-sm space-y-1 text-base-content/80">
+                <li>• Save photos between visits</li>
+                <li>• Remember your layout preferences</li>
+                <li>• Get a unique session code</li>
+              </ul>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-2 pt-4">
+              <button
+                type="submit"
+                className="btn btn-primary flex-1"
+                disabled={isCreating}
+              >
+                {isCreating ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Creating...
+                  </>
+                ) : (
+                  'Create Session 🎉'
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleSkip}
+                className="btn btn-ghost flex-1"
+                disabled={isCreating}
+              >
+                {isCreating ? 'Creating...' : 'Skip for Now'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Existing Session Form */}
+        {mode === 'existing' && (
+          <form onSubmit={handleLoadExisting} className="space-y-4">
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Session ID</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g., A1B2-C3D4-E5F6"
+                className="input input-bordered input-primary w-full font-mono"
+                value={sessionId}
+                onChange={(e) => setSessionId(e.target.value.toUpperCase())}
+                maxLength={14}
+                pattern="[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}"
+                required
+              />
+              <label className="label">
+                <span className="label-text-alt text-base-content/60">
+                  Enter the session ID from your previous visit
+                </span>
+              </label>
+            </div>
+
+            {/* Info */}
+            <div className="bg-info/10 rounded-lg p-4">
+              <h4 className="font-semibold mb-2 text-info">🔍 Find Your Session ID</h4>
+              <p className="text-sm text-base-content/80">
+                Your session ID was displayed when you first created your session.
+                It looks like <code className="bg-base-300 px-1 rounded">A1B2-C3D4-E5F6</code>
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-2 pt-4">
+              <button
+                type="submit"
+                className="btn btn-primary flex-1"
+                disabled={isLoading || !sessionId.trim()}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Loading...
+                  </>
+                ) : (
+                  'Load Session 🔓'
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('create')}
+                className="btn btn-ghost flex-1"
+                disabled={isLoading}
+              >
+                Create New Instead
+              </button>
+            </div>
+          </form>
+        )}
 
         {/* Footer */}
         <div className="text-center mt-6 text-xs text-base-content/50">

@@ -12,6 +12,8 @@ import {
   createSession,
   getStoredPhotos,
   getStoredLayout,
+  clearSession,
+  loadExistingSession,
 } from '@/lib/session';
 import LayoutsView from '@/features/layouts/components/LayoutsView';
 import Header from '@/features/home/components/Header';
@@ -81,6 +83,48 @@ export default function Home(): React.JSX.Element {
     }
   };
 
+  // Handle loading existing session
+  const handleLoadExistingSession = async (sessionId: string) => {
+    try {
+      const loadingToast = toast.loading('Loading session...');
+      const existingSession = await loadExistingSession(sessionId);
+
+      if (!existingSession) {
+        toast.error('Session not found. Please check your session ID.', { id: loadingToast });
+        return;
+      }
+
+      setSession(existingSession);
+      toast.success(`Welcome back${existingSession.nickname ? `, ${existingSession.nickname}` : ''}!`, { id: loadingToast });
+    } catch (error) {
+      console.error('Error loading existing session:', error);
+      toast.error('Failed to load session. Please try again.');
+    }
+  };
+
+  // Handle clear session
+  const handleClearSession = () => {
+    clearSession();
+    setSession(null);
+    setPhotos([]);
+    // Reset to default layout
+    const defaultLayout = {
+      id: 'classic-4',
+      name: 'Classic Strip',
+      type: 'free' as const,
+      slots: [
+        { x: 10, y: 5, width: 80, height: 20 },
+        { x: 10, y: 27, width: 80, height: 20 },
+        { x: 10, y: 49, width: 80, height: 20 },
+        { x: 10, y: 71, width: 80, height: 20 },
+      ],
+      background: '#ffffff',
+    };
+    setSelectedLayout(defaultLayout);
+    setShowSessionModal(true);
+    toast.success('Session cleared successfully!');
+  };
+
   // Show loading state during initialization
   if (isInitializing) {
     return (
@@ -96,7 +140,7 @@ export default function Home(): React.JSX.Element {
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300">
       {/* Header */}
-      <Header />
+      <Header onClearSession={handleClearSession} />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
@@ -147,6 +191,7 @@ export default function Home(): React.JSX.Element {
         isOpen={showSessionModal}
         onClose={() => setShowSessionModal(false)}
         onCreateSession={handleCreateSession}
+        onLoadExistingSession={handleLoadExistingSession}
       />
 
       {/* Toast Notifications */}

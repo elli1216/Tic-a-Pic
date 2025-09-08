@@ -154,6 +154,29 @@ export async function validateSession(
 }
 
 /**
+ * Look up and load an existing session by session ID
+ */
+export async function loadExistingSession(
+  sessionId: string
+): Promise<PhotoSession | null> {
+  try {
+    // First validate the session exists in the database
+    const session = await validateSession(sessionId);
+
+    if (!session) {
+      return null;
+    }
+
+    // Session is valid, cache it locally
+    saveSessionLocally(session);
+    return session;
+  } catch (error) {
+    console.error('Error loading existing session:', error);
+    return null;
+  }
+}
+
+/**
  * Save session to localStorage (client-side cache)
  */
 function saveSessionLocally(session: PhotoSession): void {
