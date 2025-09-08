@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type Theme = 'garden' | 'forest';
+type Theme = 'nord' | 'sunset';
 
 interface ThemeState {
   theme: Theme;
@@ -18,7 +18,7 @@ interface ThemeState {
 const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
-      theme: 'garden',
+      theme: 'nord',
       hasHydrated: false,
       setTheme: (theme: Theme) => {
         set({ theme });

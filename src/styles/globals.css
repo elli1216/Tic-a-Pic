@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 @plugin 'daisyui' {
-  themes: garden, forest;
+  themes: nord, sunset;
 }
 
 /* Custom styles for mobile-first photobooth */
@@ -30,10 +30,10 @@ textarea {
 
 /* Glassmorphism effects */
 .glass-effect {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Photo capture animation */

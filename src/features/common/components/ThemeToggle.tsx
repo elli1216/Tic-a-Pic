@@ -4,7 +4,7 @@ import React from 'react';
 import useThemeStore from '@/features/common/store/useThemeStore';
 
 /**
- * Theme toggle component that switches between garden and forest themes.
+ * Theme toggle component that switches between sunset and nord themes.
  * Uses a checkbox input with custom styling to provide a visual toggle.
  */
 export default function ThemeToggle(): React.JSX.Element {
@@ -15,9 +15,9 @@ export default function ThemeToggle(): React.JSX.Element {
   return (
     <label className="swap swap-rotate">
       {/* this hidden checkbox controls the state */}
-      <input type="checkbox" className="theme-controller" value="forest"
-        onChange={() => setTheme(theme === 'forest' ? 'garden' : 'forest')}
-        checked={theme === 'forest'}
+      <input type="checkbox" className="theme-controller" value="sunset"
+        onChange={() => setTheme(theme === 'sunset' ? 'nord' : 'sunset')}
+        checked={theme === 'sunset'}
       />
 
       {/* sun icon */}
