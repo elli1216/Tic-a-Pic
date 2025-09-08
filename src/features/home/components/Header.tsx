@@ -2,7 +2,11 @@ import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import React from 'react';
 import ThemeToggle from '@/features/common/components/ThemeToggle';
 
-export default function Header(): React.JSX.Element {
+interface HeaderProps {
+  onClearSession?: () => void;
+}
+
+export default function Header({ onClearSession }: HeaderProps): React.JSX.Element {
   const { appState, photos, session, goToCamera, goToStrip, goToLayouts } = usePhotoboothStore();
 
   return (
@@ -44,22 +48,65 @@ export default function Header(): React.JSX.Element {
           {/* Session info & Stats */}
           <div className="flex items-center justify-center gap-4">
             <ThemeToggle />
+
+            {/* Session Dropdown */}
             {session && (
-              <div className="hidden md:flex items-center justify-center gap-2 text-sm">
-                <div className="badge badge-primary badge-sm">
-                  {session.session_id}
+              <div className="dropdown dropdown-end">
+                <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
+                  👤 Session
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
-                {session.nickname && (
-                  <span className="text-base-content/70">{session.nickname}</span>
-                )}
+                <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 mt-1">
+                  <li className="menu-title">
+                    <span>Current Session</span>
+                  </li>
+                  <li>
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-sm">Session ID:</span>
+                      <div className="badge badge-primary badge-sm font-mono">
+                        {session.session_id}
+                      </div>
+                    </div>
+                  </li>
+                  {session.nickname && (
+                    <li>
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-sm">Nickname:</span>
+                        <span className="text-sm text-base-content/70">{session.nickname}</span>
+                      </div>
+                    </li>
+                  )}
+                  <li>
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-sm">Photos:</span>
+                      <span className="badge badge-ghost badge-sm">{photos.length}</span>
+                    </div>
+                  </li>
+                  <div className="divider my-1"></div>
+                  {onClearSession && (
+                    <li>
+                      <button
+                        onClick={onClearSession}
+                        className="text-error hover:bg-error/20 hover:text-error-content"
+                      >
+                        🗑️ Clear Session
+                      </button>
+                    </li>
+                  )}
+                </ul>
               </div>
             )}
 
-            <div className="flex items-center justify-center gap-2 text-sm">
-              <span className="badge badge-ghost badge-sm">
-                {photos.length} photos
-              </span>
-            </div>
+            {/* Photos count for when no session */}
+            {!session && (
+              <div className="flex items-center justify-center gap-2 text-sm">
+                <span className="badge badge-ghost badge-sm">
+                  {photos.length} photos
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>

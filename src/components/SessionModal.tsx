@@ -5,22 +5,41 @@ import React, { useState } from 'react';
 interface SessionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateSession: (nickname?: string) => void;
+  onCreateSession: (nickname?: string) => Promise<void>;
 }
 
 export default function SessionModal({ isOpen, onClose, onCreateSession }: SessionModalProps) {
   const [nickname, setNickname] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmedNickname = nickname.trim();
-    onCreateSession(trimmedNickname || undefined);
-    onClose();
+    if (isCreating) return;
+
+    setIsCreating(true);
+    try {
+      const trimmedNickname = nickname.trim();
+      await onCreateSession(trimmedNickname || undefined);
+      onClose();
+    } catch (error) {
+      // Error handling is done in parent component
+    } finally {
+      setIsCreating(false);
+    }
   };
 
-  const handleSkip = () => {
-    onCreateSession();
-    onClose();
+  const handleSkip = async () => {
+    if (isCreating) return;
+
+    setIsCreating(true);
+    try {
+      await onCreateSession();
+      onClose();
+    } catch (error) {
+      // Error handling is done in parent component
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -72,22 +91,31 @@ export default function SessionModal({ isOpen, onClose, onCreateSession }: Sessi
             <button
               type="submit"
               className="btn btn-primary flex-1"
+              disabled={isCreating}
             >
-              Create Session 🎉
+              {isCreating ? (
+                <>
+                  <span className="loading loading-spinner loading-sm"></span>
+                  Creating...
+                </>
+              ) : (
+                'Create Session 🎉'
+              )}
             </button>
             <button
               type="button"
               onClick={handleSkip}
               className="btn btn-ghost flex-1"
+              disabled={isCreating}
             >
-              Skip for Now
+              {isCreating ? 'Creating...' : 'Skip for Now'}
             </button>
           </div>
         </form>
 
         {/* Footer */}
         <div className="text-center mt-6 text-xs text-base-content/50">
-          <p>No login required • Data stored locally on your device</p>
+          <p>No login required • Session saved securely</p>
         </div>
       </div>
 

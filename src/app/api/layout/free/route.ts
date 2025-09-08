@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { supabaseAnon } from '@/lib/supabase-admin';
-import { Layout } from '@/shared/types/TYPES';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST() {
   try {
-    const { data, error } = await supabaseAnon
+    const { data, error } = await supabaseAdmin
       .from('layouts')
       .select('*')
       .eq('type', 'free')

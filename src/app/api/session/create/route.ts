@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Session } from '@/shared/types/TYPES';
 
+// Generate random 12-char session ID (e.g., "A1B2-C3D4-E5F6")
 function generateSessionId(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const segments = [];
@@ -19,23 +19,47 @@ function generateSessionId(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const userAgent = request.headers.get('user-agent') || '';
-    const sessionId = generateSessionId();
+    // Get nickname from request body (optional)
+    const body = await request.json().catch(() => ({}));
+    const { nickname } = body;
 
+    // Get device info from request headers
+    const userAgent = request.headers.get('user-agent') || '';
     const deviceInfo = {
       userAgent,
-      platform: userAgent.includes('Mobile') ? 'mobile' : 'desktop',
+      platform: request.headers.get('sec-ch-ua-platform') || 'unknown',
     };
 
-    const { data, error } = await supabaseAdmin
-      .from('sessions')
-      .insert({
-        session_id: sessionId,
-        device_info: deviceInfo,
-        created_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
+    // Generate unique session ID
+    let sessionId: string;
+    let attempts = 0;
+    const maxAttempts = 5;
+
+    do {
+      sessionId = generateSessionId();
+      attempts++;
+
+      // Check if session ID already exists
+      const { data: existing } = await supabaseAdmin
+        .from('sessions')
+        .select('session_id')
+        .eq('session_id', sessionId)
+        .single();
+
+      if (!existing) break;
+
+      if (attempts >= maxAttempts) {
+        throw new Error('Failed to generate unique session ID');
+      }
+    } while (attempts < maxAttempts);
+
+    // Create session in database
+    const { error } = await supabaseAdmin.from('sessions').insert({
+      session_id: sessionId,
+      nickname: nickname || null,
+      device_info: deviceInfo,
+      created_at: new Date().toISOString(),
+    });
 
     if (error) {
       console.error('Session creation error:', error);

@@ -43,6 +43,9 @@ interface PhotoboothState {
   goToCamera: () => void;
   goToStrip: () => void;
   goToLayouts: () => void;
+
+  // Session management
+  clearSession: () => void;
 }
 
 export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
@@ -93,7 +96,30 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
   goToCamera: () => set({ appState: 'camera' }),
   goToStrip: () => set({ appState: 'strip' }),
   goToLayouts: () => {
-
     set({ appState: 'layouts' });
+  },
+
+  // Session management
+  clearSession: () => {
+    // Reset all state to initial values
+    set({
+      session: null,
+      photos: [],
+      currentPhoto: null,
+      appState: 'camera',
+      showSessionModal: true,
+      selectedLayout: {
+        id: 'classic-4',
+        name: 'Classic Strip',
+        type: 'free',
+        slots: [
+          { x: 10, y: 5, width: 80, height: 20 },
+          { x: 10, y: 27, width: 80, height: 20 },
+          { x: 10, y: 49, width: 80, height: 20 },
+          { x: 10, y: 71, width: 80, height: 20 },
+        ],
+        background: '#ffffff',
+      },
+    });
   },
 }));

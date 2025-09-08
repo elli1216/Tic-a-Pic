@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { supabaseAnon } from '@/lib/supabase-admin';
-import { VisitorStats } from '@/shared/types/TYPES';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET() {
   try {
-    const { data, error } = await supabaseAnon
+    const { data, error } = await supabaseAdmin
       .from('visitor_stats')
       .select('total_visitors, active_now')
       .single();

@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server';
-import { supabaseAnon } from '@/lib/supabase-admin';
-import { Sticker } from '@/shared/types/TYPES';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET() {
   try {
     // Get list of stickers from Supabase Storage
     const { data: defaultStickers, error: defaultError } =
-      await supabaseAnon.storage.from('stickers').list('default', {
+      await supabaseAdmin.storage.from('stickers').list('default', {
         limit: 100,
         sortBy: { column: 'name', order: 'asc' },
       });
 
     const { data: uploadedStickers, error: uploadedError } =
-      await supabaseAnon.storage.from('stickers').list('uploaded', {
+      await supabaseAdmin.storage.from('stickers').list('uploaded', {
         limit: 100,
         sortBy: { column: 'name', order: 'asc' },
       });
@@ -28,13 +27,18 @@ export async function GET() {
       console.error('Uploaded stickers fetch error:', uploadedError);
     }
 
-    const stickers: Sticker[] = [];
+    const stickers: Array<{
+      id: string;
+      name: string;
+      url: string;
+      category: string;
+    }> = [];
 
     // Process default stickers
     if (defaultStickers) {
       for (const file of defaultStickers) {
         if (file.name && !file.name.includes('/')) {
-          const { data } = supabaseAnon.storage
+          const { data } = supabaseAdmin.storage
             .from('stickers')
             .getPublicUrl(`default/${file.name}`);
 
@@ -52,7 +56,7 @@ export async function GET() {
     if (uploadedStickers) {
       for (const file of uploadedStickers) {
         if (file.name && !file.name.includes('/')) {
-          const { data } = supabaseAnon.storage
+          const { data } = supabaseAdmin.storage
             .from('stickers')
             .getPublicUrl(`uploaded/${file.name}`);
 

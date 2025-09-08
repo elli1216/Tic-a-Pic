@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAnon } from '@/lib/supabase-admin';
-import { EmailSubscriber } from '@/shared/types/TYPES';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,8 +27,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert email subscription (using anon key as RLS allows public insert)
-    const { data, error } = await supabaseAnon
+    // Insert email subscription
+    const { data, error } = await supabaseAdmin
       .from('email_subscribers')
       .insert({
         email: email.toLowerCase().trim(),

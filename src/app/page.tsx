@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import SessionModal from '@/components/SessionModal';
 import CameraView from '@/features/camera/components/CameraView';
 import PreviewView from '@/features/camera/components/PreviewView';
@@ -11,10 +11,11 @@ import {
   getCurrentSession,
   createSession,
   getStoredPhotos,
-  getStoredLayout
+  getStoredLayout,
 } from '@/lib/session';
 import LayoutsView from '@/features/layouts/components/LayoutsView';
 import Header from '@/features/home/components/Header';
+import toast from 'react-hot-toast';
 
 /**
  * Main photobooth application page
@@ -33,32 +34,64 @@ export default function Home(): React.JSX.Element {
     setSelectedLayout,
   } = usePhotoboothStore();
 
+  const [isInitializing, setIsInitializing] = useState(true);
+
   // Initialize app on mount
   useEffect(() => {
-    // Check for existing session
-    const existingSession = getCurrentSession();
-    if (existingSession) {
-      setSession(existingSession);
-    } else {
-      // Show session modal for new users
-      setShowSessionModal(true);
-    }
+    const initializeApp = async () => {
+      try {
+        // Check for existing session
+        const existingSession = getCurrentSession();
+        if (existingSession) {
+          setSession(existingSession);
+        } else {
+          // Show session modal for new users
+          setShowSessionModal(true);
+        }
 
-    // Load stored photos and layout
-    const storedPhotos = getStoredPhotos();
-    const storedLayout = getStoredLayout();
+        // Load stored photos and layout
+        const storedPhotos = getStoredPhotos();
+        const storedLayout = getStoredLayout();
 
-    setPhotos(storedPhotos);
-    if (storedLayout) {
-      setSelectedLayout(storedLayout);
-    }
+        setPhotos(storedPhotos);
+        if (storedLayout) {
+          setSelectedLayout(storedLayout);
+        }
+      } catch (error) {
+        console.error('Error initializing app:', error);
+        toast.error('Error loading application. Please refresh the page.');
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    initializeApp();
   }, [setSession, setShowSessionModal, setPhotos, setSelectedLayout]);
 
   // Handle session creation
-  const handleCreateSession = (nickname?: string) => {
-    const newSession = createSession(nickname);
-    setSession(newSession);
+  const handleCreateSession = async (nickname?: string) => {
+    try {
+      const loadingToast = toast.loading('Creating session...');
+      const newSession = await createSession(nickname);
+      setSession(newSession);
+      toast.success('Session created successfully!', { id: loadingToast });
+    } catch (error) {
+      console.error('Error creating session:', error);
+      toast.error('Failed to create session. Please try again.');
+    }
   };
+
+  // Show loading state during initialization
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex items-center justify-center">
+        <div className="text-center">
+          <div className="loading loading-spinner loading-lg"></div>
+          <p className="mt-4 text-lg">Loading Tic-a-Pic...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300">
