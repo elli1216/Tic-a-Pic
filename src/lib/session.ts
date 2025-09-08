@@ -68,6 +68,23 @@ export function createSession(nickname?: string): PhotoSession {
 }
 
 /**
+ * Recover an existing session with a given session_id
+ */
+export function recoverSession(sessionId: string, nickname?: string): PhotoSession {
+  const session: PhotoSession = {
+    session_id: sessionId,
+    nickname,
+    photos: [],
+    selectedLayout: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  saveSession(session);
+  return session;
+}
+
+/**
  * Save session to localStorage
  */
 export function saveSession(session: PhotoSession): void {

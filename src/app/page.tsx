@@ -10,6 +10,7 @@ import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import {
   getCurrentSession,
   createSession,
+  recoverSession,
   getStoredPhotos,
   getStoredLayout
 } from '@/lib/session';
@@ -58,6 +59,12 @@ export default function Home(): React.JSX.Element {
   const handleCreateSession = (nickname?: string) => {
     const newSession = createSession(nickname);
     setSession(newSession);
+  };
+
+  // Handle session recovery
+  const handleRecoverSession = (sessionId: string, nickname?: string) => {
+    const recoveredSession = recoverSession(sessionId, nickname);
+    setSession(recoveredSession);
   };
 
   return (
@@ -114,6 +121,7 @@ export default function Home(): React.JSX.Element {
         isOpen={showSessionModal}
         onClose={() => setShowSessionModal(false)}
         onCreateSession={handleCreateSession}
+        onRecoverSession={handleRecoverSession}
       />
 
       {/* Toast Notifications */}
