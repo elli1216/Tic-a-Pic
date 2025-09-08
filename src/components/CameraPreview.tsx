@@ -15,10 +15,60 @@ export default function CameraPreview({ onCapture, isCapturing = false }: Camera
   const [error, setError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
 
+  // Check if camera API is available
+  const isCameraSupported = useCallback(() => {
+    // Check if we're in a secure context (HTTPS or localhost)
+    const isSecureContext = window.isSecureContext ||
+      location.protocol === 'https:' ||
+      location.hostname === 'localhost' ||
+      location.hostname === '127.0.0.1';
+
+    // Check if mediaDevices API is available
+    let hasMediaDevices = !!(navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+    // Polyfill for older browsers
+    if (!hasMediaDevices && navigator) {
+      // Check for older getUserMedia implementations
+      const getUserMedia = (navigator as any).getUserMedia ||
+        (navigator as any).webkitGetUserMedia ||
+        (navigator as any).mozGetUserMedia ||
+        (navigator as any).msGetUserMedia;
+
+      if (getUserMedia) {
+        // Create a polyfill for navigator.mediaDevices
+        if (!navigator.mediaDevices) {
+          (navigator as any).mediaDevices = {};
+        }
+
+        if (!navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices.getUserMedia = function (constraints: MediaStreamConstraints) {
+            return new Promise((resolve, reject) => {
+              getUserMedia.call(navigator, constraints, resolve, reject);
+            });
+          };
+        }
+        hasMediaDevices = true;
+      }
+    }
+
+    return { isSecureContext, hasMediaDevices };
+  }, []);
+
   // Initialize camera
   const initCamera = useCallback(async (facing: 'user' | 'environment' = 'user') => {
     try {
       setError(null);
+
+      // Check camera support
+      const { isSecureContext, hasMediaDevices } = isCameraSupported();
+
+      if (!isSecureContext) {
+        throw new Error('Camera access requires HTTPS or localhost. Please use a secure connection.');
+      }
+
+      if (!hasMediaDevices) {
+        throw new Error('Camera API is not supported in this browser or device.');
+      }
 
       // Stop existing stream
       if (stream) {
@@ -41,12 +91,47 @@ export default function CameraPreview({ onCapture, isCapturing = false }: Camera
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error accessing camera:', err);
       setHasPermission(false);
-      setError('Unable to access camera. Please check permissions.');
+
+      // Provide more specific error messages
+      let errorMessage = 'Unable to access camera.';
+
+      if (err.message) {
+        errorMessage = err.message;
+      } else if (err.name === 'NotAllowedError') {
+        errorMessage = 'Camera access was denied. Please allow camera permissions and try again.';
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = 'No camera found on this device.';
+      } else if (err.name === 'NotSupportedError') {
+        errorMessage = 'Camera is not supported on this device or browser.';
+      } else if (err.name === 'NotReadableError') {
+        errorMessage = 'Camera is already in use by another application.';
+      } else if (err.name === 'OverconstrainedError') {
+        errorMessage = 'Camera settings are not supported. Trying with basic settings...';
+
+        // Try again with basic constraints
+        try {
+          const basicConstraints: MediaStreamConstraints = {
+            video: true,
+            audio: false,
+          };
+          const mediaStream = await navigator.mediaDevices.getUserMedia(basicConstraints);
+          setStream(mediaStream);
+          setHasPermission(true);
+          if (videoRef.current) {
+            videoRef.current.srcObject = mediaStream;
+          }
+          return; // Success with basic constraints
+        } catch (basicErr) {
+          errorMessage = 'Camera access failed even with basic settings.';
+        }
+      }
+
+      setError(errorMessage);
     }
-  }, [stream]);
+  }, [stream, isCameraSupported]);
 
   // Capture photo
   const capturePhoto = useCallback(() => {
@@ -91,13 +176,28 @@ export default function CameraPreview({ onCapture, isCapturing = false }: Camera
 
   // Permission denied state
   if (hasPermission === false) {
+    const isHttpsError = error?.includes('HTTPS') || error?.includes('secure connection');
+
     return (
       <div className="flex flex-col items-center justify-center h-96 bg-base-200 rounded-2xl p-8">
-        <div className="text-6xl mb-4">📸</div>
-        <h3 className="text-xl font-bold mb-2">Camera Permission Required</h3>
-        <p className="text-base-content/70 text-center mb-4">
+        <div className="text-6xl mb-4">
+          {isHttpsError ? '🔒' : '📸'}
+        </div>
+        <h3 className="text-xl font-bold mb-2">
+          {isHttpsError ? 'Secure Connection Required' : 'Camera Access Issue'}
+        </h3>
+        <p className="text-base-content/70 text-center mb-4 max-w-sm">
           {error || 'Please allow camera access to take photos'}
         </p>
+        {isHttpsError && (
+          <div className="text-sm text-base-content/50 text-center mb-4 max-w-sm">
+            <p>Camera access requires:</p>
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>HTTPS connection</li>
+              <li>Or localhost for development</li>
+            </ul>
+          </div>
+        )}
         <button
           onClick={() => initCamera(facingMode)}
           className="btn btn-primary"
