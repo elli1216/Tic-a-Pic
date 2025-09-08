@@ -7,10 +7,10 @@ import { addPhoto } from '@/lib/session';
 export default function PreviewView(): React.JSX.Element {
   const {
     currentPhoto,
-    setCurrentPhoto,
-    addPhoto: addPhotoToStore,
-    setAppState
+    addPhoto,
   } = usePhotoboothStore();
+  const setCurrentPhoto = usePhotoboothStore((state) => state.setCurrentPhoto);
+  const setAppState = usePhotoboothStore((state) => state.setAppState);
 
   // Handle photo confirmation
   const handleUsePhoto = () => {
@@ -18,7 +18,7 @@ export default function PreviewView(): React.JSX.Element {
       // Add to local storage
       addPhoto(currentPhoto);
       // Add to store
-      addPhotoToStore(currentPhoto);
+      addPhoto(currentPhoto);
       setCurrentPhoto(null);
       setAppState('strip');
     }

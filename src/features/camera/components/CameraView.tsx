@@ -5,14 +5,11 @@ import CameraPreview from '@/components/CameraPreview';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 
 export default function CameraView(): React.JSX.Element {
-  const {
-    photos,
-    isCapturing,
-    setCurrentPhoto,
-    setAppState,
-    setIsCapturing,
-    goToStrip
-  } = usePhotoboothStore();
+  const { photos, isCapturing } = usePhotoboothStore();
+  const setCurrentPhoto = usePhotoboothStore((state) => state.setCurrentPhoto);
+  const setAppState = usePhotoboothStore((state) => state.setAppState);
+  const setIsCapturing = usePhotoboothStore((state) => state.setIsCapturing);
+  const goToStrip = usePhotoboothStore((state) => state.goToStrip);
 
   // Handle photo capture
   const handleCapture = (imageData: string) => {

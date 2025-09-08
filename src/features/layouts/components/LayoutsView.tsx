@@ -8,13 +8,10 @@ import { saveLayout } from '@/lib/session';
 import toast from 'react-hot-toast';
 
 export default function LayoutsView(): React.JSX.Element {
-  const {
-    photos,
-    selectedLayout,
-    setSelectedLayout,
-    setAppState,
-    goToStrip
-  } = usePhotoboothStore();
+  const { photos, goToStrip } = usePhotoboothStore();
+  const selectedLayout = usePhotoboothStore((state) => state.selectedLayout);
+  const setSelectedLayout = usePhotoboothStore((state) => state.setSelectedLayout);
+  const setAppState = usePhotoboothStore((state) => state.setAppState);
 
   // Handle layout selection with validation
   const handleLayoutSelect = (layout: LayoutConfig) => {
@@ -63,7 +60,7 @@ export default function LayoutsView(): React.JSX.Element {
       <div className="text-center">
         <button
           onClick={goToStrip}
-          className="btn btn-primary"
+          className={`btn btn-primary ${photos.length === 0 ? 'btn-disabled opacity-50' : ''}`}
         >
           ← Back to Strip
         </button>

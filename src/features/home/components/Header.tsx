@@ -1,49 +1,68 @@
-import dynamic from 'next/dynamic';
+import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import React from 'react';
-const ThemeToggle = dynamic(() => import("@/features/common/components/ThemeToggle"));
+import ThemeToggle from '@/features/common/components/ThemeToggle';
 
 export default function Header(): React.JSX.Element {
+  const { appState, photos, session, goToCamera, goToStrip, goToLayouts } = usePhotoboothStore();
+
   return (
-    <div className="navbar bg-base-100 shadow-sm">
-      <div className="navbar-start">
-        <div className="dropdown">
-          <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" /> </svg>
+    <header className="sticky top-0 z-10 bg-base-100/80 backdrop-blur-md border-b border-base-300">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">📸</span>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text">
+              Tic a Pic
+            </h1>
           </div>
-          <ul
-            tabIndex={0}
-            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-            <li><a>Item 1</a></li>
-            <li>
-              <a>Parent</a>
-              <ul className="p-2">
-                <li><a>Submenu 1</a></li>
-                <li><a>Submenu 2</a></li>
-              </ul>
-            </li>
-            <li><a>Item 3</a></li>
-          </ul>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden sm:flex items-center gap-4">
+            <button
+              onClick={goToCamera}
+              className={`btn btn-ghost btn-sm ${appState === 'camera' ? 'btn-active' : ''}`}
+            >
+              📷 Camera
+            </button>
+            <button
+              onClick={goToStrip}
+              className={`btn btn-ghost btn-sm ${appState === 'strip' ? 'btn-active' : ''} ${photos.length === 0 ? 'btn-disabled opacity-50' : ''}`}
+              disabled={photos.length === 0}
+              title={photos.length === 0 ? 'Take some photos first' : 'View photo strip'}
+            >
+              🎞️ Strip {photos.length > 0 && `(${photos.length})`}
+            </button>
+            <button
+              onClick={goToLayouts}
+              className={`btn btn-ghost btn-sm ${appState === 'layouts' ? 'btn-active' : ''}`}
+            >
+              🎨 Layouts
+            </button>
+          </nav>
+
+          {/* Session info & Stats */}
+          <div className="flex items-center justify-center gap-4">
+            <ThemeToggle />
+            {session && (
+              <div className="hidden md:flex items-center justify-center gap-2 text-sm">
+                <div className="badge badge-primary badge-sm">
+                  {session.session_id}
+                </div>
+                {session.nickname && (
+                  <span className="text-base-content/70">{session.nickname}</span>
+                )}
+              </div>
+            )}
+
+            <div className="flex items-center justify-center gap-2 text-sm">
+              <span className="badge badge-ghost badge-sm">
+                {photos.length} photos
+              </span>
+            </div>
+          </div>
         </div>
-        <a className="btn btn-ghost text-xl">Photobooth</a>
       </div>
-      <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1">
-          <li><a>Item 1</a></li>
-          <li>
-            <details>
-              <summary>Parent</summary>
-              <ul className="p-2">
-                <li><a>Submenu 1</a></li>
-                <li><a>Submenu 2</a></li>
-              </ul>
-            </details>
-          </li>
-          <li><a>Item 3</a></li>
-        </ul>
-      </div>
-      <div className="navbar-end">
-        <ThemeToggle />
-      </div>
-    </div>
+    </header>
   )
 }
