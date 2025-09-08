@@ -1,6 +1,7 @@
 'use client';
 
 import { LayoutConfig } from '@/components/PhotoStripCanvas';
+import { supabaseAnon } from './supabase-admin';
 
 export interface PhotoSession {
   session_id: string;
@@ -9,11 +10,16 @@ export interface PhotoSession {
   selectedLayout: LayoutConfig | null;
   created_at: string;
   updated_at: string;
+  device_info?: {
+    userAgent?: string;
+    platform?: string;
+  };
 }
 
-const SESSION_STORAGE_KEY = 'tic-a-pic-session';
+// Keep some localStorage keys for client-side caching
 const PHOTOS_STORAGE_KEY = 'tic-a-pic-photos';
 const LAYOUT_STORAGE_KEY = 'tic-a-pic-layout';
+const CURRENT_SESSION_KEY = 'tic-a-pic-current-session';
 
 /**
  * Generate a random session ID in format XXXX-XXXX-XXXX
@@ -34,13 +40,25 @@ export function generateSessionId(): string {
 }
 
 /**
- * Get current session from localStorage
+ * Get device information for session tracking
+ */
+function getDeviceInfo() {
+  if (typeof window === 'undefined') return {};
+  
+  return {
+    userAgent: navigator.userAgent,
+    platform: navigator.platform,
+  };
+}
+
+/**
+ * Get current session from localStorage (client-side cache)
  */
 export function getCurrentSession(): PhotoSession | null {
   if (typeof window === 'undefined') return null;
 
   try {
-    const sessionData = localStorage.getItem(SESSION_STORAGE_KEY);
+    const sessionData = localStorage.getItem(CURRENT_SESSION_KEY);
     if (!sessionData) return null;
 
     return JSON.parse(sessionData);
@@ -51,33 +69,92 @@ export function getCurrentSession(): PhotoSession | null {
 }
 
 /**
- * Create a new session
+ * Create a new session in Supabase
  */
-export function createSession(nickname?: string): PhotoSession {
-  const session: PhotoSession = {
-    session_id: generateSessionId(),
-    nickname,
-    photos: [],
-    selectedLayout: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
+export async function createSession(nickname?: string): Promise<PhotoSession> {
+  const sessionId = generateSessionId();
+  const deviceInfo = getDeviceInfo();
+  
+  try {
+    // Insert session into Supabase
+    const { error } = await supabaseAnon
+      .from('sessions')
+      .insert({
+        session_id: sessionId,
+        nickname: nickname || null,
+        device_info: deviceInfo,
+        created_at: new Date().toISOString(),
+      });
 
-  saveSession(session);
-  return session;
+    if (error) {
+      console.error('Error creating session in Supabase:', error);
+      throw new Error(`Failed to create session: ${error.message}`);
+    }
+
+    const session: PhotoSession = {
+      session_id: sessionId,
+      nickname,
+      photos: [],
+      selectedLayout: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      device_info: deviceInfo,
+    };
+
+    // Cache session locally
+    saveSessionLocally(session);
+    return session;
+  } catch (error) {
+    console.error('Error creating session:', error);
+    throw error;
+  }
 }
 
 /**
- * Save session to localStorage
+ * Validate session exists in Supabase
  */
-export function saveSession(session: PhotoSession): void {
+export async function validateSession(sessionId: string): Promise<PhotoSession | null> {
+  try {
+    const { data, error } = await supabaseAnon
+      .from('sessions')
+      .select('session_id, nickname, created_at')
+      .eq('session_id', sessionId)
+      .single();
+
+    if (error || !data) {
+      console.error('Session not found:', error?.message);
+      return null;
+    }
+
+    const session: PhotoSession = {
+      session_id: data.session_id,
+      nickname: data.nickname,
+      photos: getStoredPhotos(),
+      selectedLayout: getStoredLayout(),
+      created_at: data.created_at,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Cache session locally
+    saveSessionLocally(session);
+    return session;
+  } catch (error) {
+    console.error('Error validating session:', error);
+    return null;
+  }
+}
+
+/**
+ * Save session to localStorage (client-side cache)
+ */
+function saveSessionLocally(session: PhotoSession): void {
   if (typeof window === 'undefined') return;
 
   try {
     session.updated_at = new Date().toISOString();
-    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+    localStorage.setItem(CURRENT_SESSION_KEY, JSON.stringify(session));
   } catch (error) {
-    console.error('Error saving session:', error);
+    console.error('Error saving session locally:', error);
   }
 }
 
@@ -109,7 +186,7 @@ export function savePhotos(photos: string[]): void {
     const session = getCurrentSession();
     if (session) {
       session.photos = photos;
-      saveSession(session);
+      saveSessionLocally(session);
     }
   } catch (error) {
     console.error('Error saving photos:', error);
@@ -171,7 +248,7 @@ export function saveLayout(layout: LayoutConfig): void {
     const session = getCurrentSession();
     if (session) {
       session.selectedLayout = layout;
-      saveSession(session);
+      saveSessionLocally(session);
     }
   } catch (error) {
     console.error('Error saving layout:', error);
@@ -185,7 +262,7 @@ export function clearSession(): void {
   if (typeof window === 'undefined') return;
 
   try {
-    localStorage.removeItem(SESSION_STORAGE_KEY);
+    localStorage.removeItem(CURRENT_SESSION_KEY);
     localStorage.removeItem(PHOTOS_STORAGE_KEY);
     localStorage.removeItem(LAYOUT_STORAGE_KEY);
   } catch (error) {
