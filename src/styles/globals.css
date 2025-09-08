@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@plugin "daisyui" {
+@import 'tailwindcss';
+@plugin 'daisyui' {
   themes: garden, forest;
 }
 
@@ -16,8 +16,8 @@ body {
 }
 
 /* Prevent zoom on iOS */
-input[type="text"], 
-input[type="email"], 
+input[type='text'],
+input[type='email'],
 textarea {
   font-size: 16px;
 }
@@ -38,9 +38,15 @@ textarea {
 
 /* Photo capture animation */
 @keyframes capture-flash {
-  0% { opacity: 0; }
-  50% { opacity: 0.8; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .capture-flash {
@@ -53,18 +59,18 @@ textarea {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   /* Larger touch targets on mobile */
   .btn-sm {
     min-height: 40px;
     padding: 0.5rem 1rem;
   }
-  
+
   /* Better spacing for mobile */
   .space-y-6 > * + * {
     margin-top: 1.5rem;
   }
-  
+
   .space-y-4 > * + * {
     margin-top: 1rem;
   }

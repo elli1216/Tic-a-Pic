@@ -92,5 +92,8 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
   // Navigation helpers
   goToCamera: () => set({ appState: 'camera' }),
   goToStrip: () => set({ appState: 'strip' }),
-  goToLayouts: () => set({ appState: 'layouts' }),
+  goToLayouts: () => {
+
+    set({ appState: 'layouts' });
+  },
 }));

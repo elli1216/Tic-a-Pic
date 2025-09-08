@@ -26,8 +26,8 @@ export default function SessionModal({ isOpen, onClose, onCreateSession }: Sessi
   if (!isOpen) return null;
 
   return (
-    <div className="modal modal-open">
-      <div className="modal-box max-w-md">
+    <div className="modal modal-open glass-effect">
+      <div className="modal-box max-w-md relative z-10">
         {/* Header */}
         <div className="text-center mb-6">
           <h3 className="text-2xl font-bold text-primary mb-2">Welcome to Tic a Pic! 📸</h3>
@@ -45,7 +45,7 @@ export default function SessionModal({ isOpen, onClose, onCreateSession }: Sessi
             <input
               type="text"
               placeholder="e.g., 'Darla's Birthday', 'Squad Goals'..."
-              className="input input-bordered w-full"
+              className="input input-bordered input-primary w-full"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               maxLength={50}
@@ -92,7 +92,7 @@ export default function SessionModal({ isOpen, onClose, onCreateSession }: Sessi
       </div>
 
       {/* Backdrop */}
-      <div className="modal-backdrop" onClick={handleSkip}></div>
+      <div className="modal-backdrop glass-effect backdrop-blur-md" onClick={handleSkip}></div>
     </div>
   );
 }
