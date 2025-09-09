@@ -4,7 +4,6 @@
 
 - `session_id` (text, primary) → e.g., "PHX9-M2LQ-7TZR"
 - `created_at` (timestamptz)
-- `device_info` (jsonb) → { userAgent, platform }
 - `nickname` (text)
 
 ## Table: `layouts`

@@ -25,10 +25,6 @@ export async function POST(request: NextRequest) {
 
     // Get device info from request headers
     const userAgent = request.headers.get('user-agent') || '';
-    const deviceInfo = {
-      userAgent,
-      platform: request.headers.get('sec-ch-ua-platform') || 'unknown',
-    };
 
     // Generate unique session ID
     let sessionId: string;
@@ -57,7 +53,6 @@ export async function POST(request: NextRequest) {
     const { error } = await supabaseAdmin.from('sessions').insert({
       session_id: sessionId,
       nickname: nickname || null,
-      device_info: deviceInfo,
       created_at: new Date().toISOString(),
     });
 
