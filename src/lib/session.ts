@@ -9,10 +9,6 @@ export interface PhotoSession {
   selectedLayout: LayoutConfig | null;
   created_at: string;
   updated_at: string;
-  device_info?: {
-    userAgent?: string;
-    platform?: string;
-  };
 }
 
 // Keep some localStorage keys for client-side caching
@@ -36,18 +32,6 @@ export function generateSessionId(): string {
   }
 
   return segments.join('-');
-}
-
-/**
- * Get device information for session tracking
- */
-function getDeviceInfo() {
-  if (typeof window === 'undefined') return {};
-
-  return {
-    userAgent: navigator.userAgent,
-    platform: navigator.platform,
-  };
 }
 
 /**
@@ -97,7 +81,6 @@ export async function createSession(nickname?: string): Promise<PhotoSession> {
       selectedLayout: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      device_info: getDeviceInfo(),
     };
 
     // Cache session locally
@@ -141,7 +124,6 @@ export async function validateSession(
       selectedLayout: getStoredLayout(),
       created_at: result.session.created_at,
       updated_at: new Date().toISOString(),
-      device_info: getDeviceInfo(),
     };
 
     // Cache session locally
