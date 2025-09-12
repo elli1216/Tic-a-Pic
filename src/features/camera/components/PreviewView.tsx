@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
-import { addPhoto } from '@/lib/session';
+import Image from 'next/image';
 
 export default function PreviewView(): React.JSX.Element {
   const {
@@ -45,7 +45,7 @@ export default function PreviewView(): React.JSX.Element {
 
       {/* Photo Preview */}
       <div className="relative aspect-[3/4] bg-black rounded-2xl overflow-hidden shadow-2xl">
-        <img
+        <Image
           src={currentPhoto}
           alt="Captured photo"
           className="w-full h-full object-cover"

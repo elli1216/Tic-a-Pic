@@ -35,6 +35,7 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
         toast.success('Session ID copied successfully!');
       } catch (fallbackError) {
         toast.error('Failed to copy session ID. Please copy it manually.');
+        console.error('Failed to copy session ID:', fallbackError);
       }
     }
   };

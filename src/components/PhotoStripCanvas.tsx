@@ -22,19 +22,6 @@ interface PhotoStripCanvasProps {
   className?: string;
 }
 
-const DEFAULT_LAYOUT: LayoutConfig = {
-  id: 'classic-4',
-  name: 'Classic 4-Photo Strip',
-  type: 'free',
-  slots: [
-    { x: 10, y: 5, width: 80, height: 20 },
-    { x: 10, y: 27, width: 80, height: 20 },
-    { x: 10, y: 49, width: 80, height: 20 },
-    { x: 10, y: 71, width: 80, height: 20 },
-  ],
-  background: '#ffffff',
-};
-
 export default function PhotoStripCanvas({
   showWatermark = true,
   className = ''
@@ -203,7 +190,7 @@ export default function PhotoStripCanvas({
   // Redraw when photos or layout change
   useEffect(() => {
     drawPhotoStrip();
-  }, [photos, layout, showWatermark]);
+  }, [drawPhotoStrip]);
 
   // Download functionality
   const downloadStrip = () => {
