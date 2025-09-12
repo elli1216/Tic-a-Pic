@@ -14,6 +14,7 @@ export default function CameraPreview() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const [isMirrored, setIsMirrored] = useState<boolean>(true); // Default to mirrored for front camera
 
   // Check if camera API is available
   const isCameraSupported = useCallback(() => {
@@ -56,7 +57,7 @@ export default function CameraPreview() {
   }, []);
 
   // Initialize camera
-  const initCamera = useCallback(async (facing: 'user' | 'environment' = 'user') => {
+  const initCamera = useCallback(async (facing: 'user' | 'environment') => {
     try {
       setError(null);
 
@@ -64,7 +65,7 @@ export default function CameraPreview() {
       const { isSecureContext, hasMediaDevices } = isCameraSupported();
 
       if (!isSecureContext) {
-        throw new Error('Camera access requires HTTPS or localhost. Please use a secure connection.');
+        throw new Error('Camera access requires HTTPS. Please use a secure connection.');
       }
 
       if (!hasMediaDevices) {
@@ -156,8 +157,20 @@ export default function CameraPreview() {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Draw video frame to canvas
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Handle mirroring for captured photo
+    if (isMirrored) {
+      // Save current transform state
+      ctx.save();
+      // Flip horizontally
+      ctx.scale(-1, 1);
+      // Draw video frame to canvas (with negative x offset due to flip)
+      ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+      // Restore transform state
+      ctx.restore();
+    } else {
+      // Draw video frame to canvas normally
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    }
 
     // Get image data as base64
     const imageData = canvas.toDataURL('image/jpeg', 0.8);
@@ -165,14 +178,21 @@ export default function CameraPreview() {
 
     // Reset capturing state after a brief delay for visual feedback
     setTimeout(() => setIsCapturing(false), 200);
-  }, [addPhoto, setIsCapturing]);
+  }, [addPhoto, setIsCapturing, isMirrored]);
 
   // Switch camera (front/back)
   const switchCamera = useCallback(() => {
     const newFacing = facingMode === 'user' ? 'environment' : 'user';
     setFacingMode(newFacing);
+    // Auto-set mirror based on camera: front camera typically mirrored, back camera not
+    setIsMirrored(newFacing === 'user');
     initCamera(newFacing);
   }, [facingMode, initCamera]);
+
+  // Toggle mirror/flip
+  const toggleMirror = useCallback(() => {
+    setIsMirrored(prev => !prev);
+  }, []);
 
   // Initialize camera on mount
   useEffect(() => {
@@ -206,7 +226,6 @@ export default function CameraPreview() {
             <p>Camera access requires:</p>
             <ul className="list-disc list-inside mt-2 space-y-1">
               <li>HTTPS connection</li>
-              <li>Or localhost for development</li>
             </ul>
           </div>
         )}
@@ -239,7 +258,8 @@ export default function CameraPreview() {
           autoPlay
           playsInline
           muted
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover transition-transform duration-300 ${isMirrored ? 'scale-x-[-1]' : ''
+            }`}
         />
 
         {/* Camera overlay UI */}
@@ -259,14 +279,27 @@ export default function CameraPreview() {
 
       {/* Camera Controls */}
       <div className="flex items-center justify-between mt-6">
-        {/* Switch Camera Button */}
-        <button
-          onClick={switchCamera}
-          className="btn btn-ghost btn-circle text-xl"
-          title="Switch Camera"
-        >
-          🔄
-        </button>
+        {/* Left Controls */}
+        <div className="flex items-center gap-2">
+          {/* Switch Camera Button */}
+          <button
+            onClick={switchCamera}
+            className="btn btn-ghost btn-circle text-xl"
+            title="Switch Camera"
+          >
+            🔄
+          </button>
+
+          {/* Mirror Toggle Button */}
+          <button
+            onClick={toggleMirror}
+            className={`btn btn-ghost btn-circle text-xl ${isMirrored ? 'bg-primary/20 text-primary' : ''
+              }`}
+            title={isMirrored ? 'Disable Mirror' : 'Enable Mirror'}
+          >
+            🪞
+          </button>
+        </div>
 
         {/* Capture Button */}
         <button
@@ -278,8 +311,8 @@ export default function CameraPreview() {
           <span className="text-2xl">📸</span>
         </button>
 
-        {/* Placeholder for balance */}
-        <div className="w-12"></div>
+        {/* Right Controls - Placeholder for balance */}
+        <div className="w-20"></div>
       </div>
 
       {/* Hidden canvas for capture */}

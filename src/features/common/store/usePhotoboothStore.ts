@@ -22,6 +22,8 @@ interface PhotoboothState {
   setPhotos: (photos: string[]) => void;
   addPhoto: (photo: string) => void;
   removePhoto: (index: number) => void;
+  reorderPhotos: (fromIndex: number, toIndex: number) => void;
+  replacePhoto: (index: number, photo: string) => void;
   currentPhoto: string | null;
   setCurrentPhoto: (photo: string | null) => void;
 
@@ -91,6 +93,21 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
   removePhoto: (index) => {
     const { photos } = get();
     const updatedPhotos = photos.filter((_, i) => i !== index);
+    set({ photos: updatedPhotos });
+  },
+
+  reorderPhotos: (fromIndex, toIndex) => {
+    const { photos } = get();
+    const updatedPhotos = [...photos];
+    const [movedPhoto] = updatedPhotos.splice(fromIndex, 1);
+    updatedPhotos.splice(toIndex, 0, movedPhoto);
+    set({ photos: updatedPhotos });
+  },
+
+  replacePhoto: (index, photo) => {
+    const { photos } = get();
+    const updatedPhotos = [...photos];
+    updatedPhotos[index] = photo;
     set({ photos: updatedPhotos });
   },
 

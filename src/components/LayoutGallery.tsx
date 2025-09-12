@@ -205,10 +205,15 @@ export default function LayoutGallery({ className = '' }: LayoutGalleryProps) {
       </div>
 
       {/* Usage tip */}
-      <div className="mt-4 text-center">
+      <div className="mt-4 text-center space-y-2">
         <p className="text-xs text-base-content/60">
           💡 Tip: Take photos first, then choose your favorite layout!
         </p>
+        {photos.length > 0 && (
+          <p className="text-xs text-primary">
+            ✨ Don't forget to check the "Edit Photos" tab to reorder and customize your images!
+          </p>
+        )}
       </div>
     </div>
   );
