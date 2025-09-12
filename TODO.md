@@ -45,5 +45,4 @@
 
 - [ ] Optimize for mobile
 - [ ] Deploy on Vercel (`ticapic.com`)
-- [ ] Promote via Darl Ellison & classmates
-- [ ] Add "Sponsored by Darl Ellison" badge (optional)
+- [ ] Promote via Darl Ellison & Paolo Angelo
