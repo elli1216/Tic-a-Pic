@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
+import { toast } from 'react-hot-toast';
 
 interface CreateSessionForm {
   nickname: string;
@@ -42,8 +43,10 @@ export default function SessionModal() {
       const trimmedNickname = data.nickname.trim();
       await createSession(trimmedNickname || undefined);
       setShowSessionModal(false);
+      toast.success('Session created successfully!');
       createForm.reset();
     } catch (error) {
+      toast.error('Failed to create session!');
       // Error handling is done in store
     } finally {
       setIsCreating(false);
@@ -57,7 +60,9 @@ export default function SessionModal() {
     try {
       await createSession();
       setShowSessionModal(false);
+      toast.success('Session created!');
     } catch (error) {
+      toast.error('Failed to create session!');
       // Error handling is done in store
     } finally {
       setIsCreating(false);
@@ -71,10 +76,12 @@ export default function SessionModal() {
     try {
       await loadExistingSession(data.sessionId.trim().toUpperCase());
       setShowSessionModal(false);
+      toast.success('Session loaded successfully!');
       // Reset form and mode
       loadForm.reset();
       setMode('create');
     } catch (error) {
+      toast.error('Failed to load session!');
       // Error handling is done in store
     } finally {
       setIsLoading(false);
