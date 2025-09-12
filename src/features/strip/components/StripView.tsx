@@ -4,6 +4,7 @@ import React from 'react';
 import PhotoStripCanvas from '@/components/PhotoStripCanvas';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import { removePhoto } from '@/lib/session';
+import Image from 'next/image';
 
 export default function StripView(): React.JSX.Element {
   const {
@@ -65,7 +66,7 @@ export default function StripView(): React.JSX.Element {
               <div className="grid grid-cols-2 gap-2">
                 {photos.map((photo, index) => (
                   <div key={index} className="relative group">
-                    <img
+                    <Image
                       src={photo}
                       alt={`Photo ${index + 1}`}
                       className="w-full aspect-square object-cover rounded-lg"

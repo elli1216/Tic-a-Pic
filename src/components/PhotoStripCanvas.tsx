@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 
 export interface LayoutConfig {
@@ -34,7 +34,7 @@ export default function PhotoStripCanvas({
   // QR code URL pointing to ticapic.com
   const qrCodeUrl = '/qr-ticapic.svg';
 
-  const drawPhotoStrip = async () => {
+  const drawPhotoStrip = useCallback(async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -178,14 +178,14 @@ export default function PhotoStripCanvas({
 
         // Add watermark text
         ctx.fillStyle = '#374151';
-        ctx.font = '12px Dancing Script, cursive';
+        ctx.font = '12px var(--font-dancing-script), cursive';
         ctx.textAlign = 'center';
         ctx.fillText('Made with Tic a Pic', qrX + qrSize / 2, qrY + qrSize + 20);
       } catch (error) {
         console.error('Error adding QR watermark:', error);
       }
     }
-  };
+  }, [showWatermark, layout.slots, layout.background, photos]);
 
   // Redraw when photos or layout change
   useEffect(() => {

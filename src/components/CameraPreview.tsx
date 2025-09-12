@@ -204,7 +204,7 @@ export default function CameraPreview() {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, []);
+  }, [facingMode, initCamera, stream]);
 
   // Permission denied state
   if (hasPermission === false) {

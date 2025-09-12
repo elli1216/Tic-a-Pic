@@ -47,6 +47,7 @@ export default function SessionModal() {
       createForm.reset();
     } catch (error) {
       toast.error('Failed to create session!');
+      console.error('Failed to create session:', error);
       // Error handling is done in store
     } finally {
       setIsCreating(false);
@@ -63,6 +64,7 @@ export default function SessionModal() {
       toast.success('Session created!');
     } catch (error) {
       toast.error('Failed to create session!');
+      console.error('Failed to create session:', error);
       // Error handling is done in store
     } finally {
       setIsCreating(false);
@@ -82,6 +84,7 @@ export default function SessionModal() {
       setMode('create');
     } catch (error) {
       toast.error('Failed to load session!');
+      console.error('Failed to load session:', error);
       // Error handling is done in store
     } finally {
       setIsLoading(false);

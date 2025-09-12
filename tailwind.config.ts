@@ -10,7 +10,7 @@ const config: Config & { daisyui?: any } = {
   theme: {
     extend: {
       fontFamily: {
-        dancing: ['Dancing Script', 'cursive'],
+        dancing: ['var(--font-dancing-script)', 'cursive'],
         serif: ['Georgia', 'serif'],
       },
       aspectRatio: {

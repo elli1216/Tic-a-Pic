@@ -13,7 +13,6 @@ import {
   DragStartEvent,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
@@ -156,7 +155,6 @@ export default function PhotoEditor({ layout, className = '' }: PhotoEditorProps
   const reorderPhotos = usePhotoboothStore((state) => state.reorderPhotos);
   const removePhoto = usePhotoboothStore((state) => state.removePhoto);
   const replacePhoto = usePhotoboothStore((state) => state.replacePhoto);
-  const addPhoto = usePhotoboothStore((state) => state.addPhoto);
   const setAppState = usePhotoboothStore((state) => state.setAppState);
 
   const [activeId, setActiveId] = React.useState<string | null>(null);

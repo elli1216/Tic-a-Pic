@@ -211,7 +211,7 @@ export default function LayoutGallery({ className = '' }: LayoutGalleryProps) {
         </p>
         {photos.length > 0 && (
           <p className="text-xs text-primary">
-            ✨ Don't forget to check the "Edit Photos" tab to reorder and customize your images!
+            ✨ Don&apos;t forget to check the Edit Photos tab to reorder and customize your images!
           </p>
         )}
       </div>
