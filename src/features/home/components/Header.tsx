@@ -1,13 +1,43 @@
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import React from 'react';
 import ThemeToggle from '@/features/common/components/ThemeToggle';
+import { toast } from 'react-hot-toast';
 
 interface HeaderProps {
   onClearSession?: () => void;
 }
 
 export default function Header({ onClearSession }: HeaderProps): React.JSX.Element {
-  const { appState, photos, session, goToCamera, goToStrip, goToLayouts } = usePhotoboothStore();
+  const appState = usePhotoboothStore((state) => state.appState);
+  const photos = usePhotoboothStore((state) => state.photos);
+  const session = usePhotoboothStore((state) => state.session);
+  const goToCamera = usePhotoboothStore((state) => state.goToCamera);
+  const goToStrip = usePhotoboothStore((state) => state.goToStrip);
+  const goToLayouts = usePhotoboothStore((state) => state.goToLayouts);
+
+  // Handle copying session ID to clipboard
+  const handleCopySessionId = async () => {
+    if (!session?.session_id) return;
+
+    try {
+      await navigator.clipboard.writeText(session.session_id);
+      toast.success('Session ID copied successfully!');
+    } catch (error) {
+      console.error('Failed to copy session ID:', error);
+      // Fallback for browsers that don't support clipboard API
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = session.session_id;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        toast.success('Session ID copied successfully!');
+      } catch (fallbackError) {
+        toast.error('Failed to copy session ID. Please copy it manually.');
+      }
+    }
+  };
 
   return (
     <header className="sticky top-0 z-10 bg-base-100/80 backdrop-blur-md border-b border-base-300">
@@ -63,11 +93,20 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
                     <span>Current Session</span>
                   </li>
                   <li>
+                    <div className="text-xs text-base-content/50 px-2 pb-1">
+                      💡 Click session ID to copy
+                    </div>
+                  </li>
+                  <li>
                     <div className="flex items-center justify-between py-2">
                       <span className="text-sm">Session ID:</span>
-                      <div className="badge badge-primary badge-sm font-mono">
+                      <button
+                        onClick={handleCopySessionId}
+                        className="badge badge-primary badge-sm font-mono hover:badge-primary-focus transition-colors cursor-pointer group relative"
+                        title="Click to copy session ID"
+                      >
                         {session.session_id}
-                      </div>
+                      </button>
                     </div>
                   </li>
                   {session.nickname && (

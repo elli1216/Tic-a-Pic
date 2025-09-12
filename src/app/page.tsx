@@ -16,7 +16,8 @@ import {
 } from '@/lib/session';
 import LayoutsView from '@/features/layouts/components/LayoutsView';
 import Header from '@/features/home/components/Header';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
+import useThemeStore from '@/features/common/store/useThemeStore';
 
 /**
  * Main photobooth application page
@@ -31,6 +32,7 @@ export default function Home(): React.JSX.Element {
   const goToCamera = usePhotoboothStore((state) => state.goToCamera);
   const goToStrip = usePhotoboothStore((state) => state.goToStrip);
   const goToLayouts = usePhotoboothStore((state) => state.goToLayouts);
+  const theme = useThemeStore((state) => state.theme);
 
   const [isInitializing, setIsInitializing] = useState(true);
 
@@ -225,7 +227,13 @@ export default function Home(): React.JSX.Element {
       <SessionModal />
 
       {/* Toast Notifications */}
-      <Toaster />
+      <Toaster toastOptions={{
+        position: 'top-left',
+        style: {
+          backgroundColor: theme === 'sunset' ? '#111827' : '#ffffff',
+          color: theme === 'sunset' ? '#ffffff' : '#000000',
+        },
+      }} />
 
       {/* Bottom padding for mobile nav */}
       <div className="h-20 sm:hidden"></div>
