@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert email subscription
-    const { data, error } = await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from('email_subscribers')
       .insert({
         email: email.toLowerCase().trim(),

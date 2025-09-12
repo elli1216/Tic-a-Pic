@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-06-20',
+  apiVersion: '2025-07-30.basil',
 });
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -40,7 +40,7 @@ function generatePremiumCode(): string {
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
-  const headersList = headers();
+  const headersList = await headers();
   const sig = headersList.get('stripe-signature');
 
   let event: Stripe.Event;
@@ -51,8 +51,12 @@ export async function POST(request: NextRequest) {
     }
 
     event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
-  } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message);
+  } catch (err: Error | unknown) {
+    if (err instanceof Error) {
+      console.error('Webhook signature verification failed:', err.message);
+    } else {
+      console.error('Webhook signature verification failed:', err);
+    }
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
@@ -71,13 +75,13 @@ export async function POST(request: NextRequest) {
         attempts++;
 
         // Check if code already exists
-        const { data: existing } = await supabaseAdmin
+        const { error: existingError } = await supabaseAdmin
           .from('premium_codes')
           .select('code')
           .eq('code', premiumCode)
           .single();
 
-        if (!existing) break;
+        if (!existingError) break;
 
         if (attempts >= maxAttempts) {
           throw new Error('Failed to generate unique premium code');

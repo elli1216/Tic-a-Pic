@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Save feedback
-    const { data, error } = await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from('feedback')
       .insert({
         type,
