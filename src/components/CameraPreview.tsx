@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
+import { LegacyNavigator } from '@/shared/types/TYPES';
 
 export default function CameraPreview() {
   const isCapturing = usePhotoboothStore((state) => state.isCapturing);
@@ -28,15 +29,16 @@ export default function CameraPreview() {
     // Polyfill for older browsers
     if (!hasMediaDevices && navigator) {
       // Check for older getUserMedia implementations
-      const getUserMedia = (navigator as any).getUserMedia ||
-        (navigator as any).webkitGetUserMedia ||
-        (navigator as any).mozGetUserMedia ||
-        (navigator as any).msGetUserMedia;
+      const legacyNavigator = navigator as LegacyNavigator;
+      const getUserMedia = legacyNavigator.getUserMedia ||
+        legacyNavigator.webkitGetUserMedia ||
+        legacyNavigator.mozGetUserMedia ||
+        legacyNavigator.msGetUserMedia;
 
       if (getUserMedia) {
         // Create a polyfill for navigator.mediaDevices
         if (!navigator.mediaDevices) {
-          (navigator as any).mediaDevices = {};
+          legacyNavigator.mediaDevices = {} as MediaDevices;
         }
 
         if (!navigator.mediaDevices.getUserMedia) {
@@ -90,45 +92,51 @@ export default function CameraPreview() {
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
-    } catch (err: any) {
-      console.error('Error accessing camera:', err);
-      setHasPermission(false);
+    } catch (err: Error | unknown) {
+      if (err instanceof Error) {
+        console.error('Error accessing camera:', err);
+        setHasPermission(false);
 
-      // Provide more specific error messages
-      let errorMessage = 'Unable to access camera.';
+        // Provide more specific error messages
+        let errorMessage = 'Unable to access camera.';
 
-      if (err.message) {
-        errorMessage = err.message;
-      } else if (err.name === 'NotAllowedError') {
-        errorMessage = 'Camera access was denied. Please allow camera permissions and try again.';
-      } else if (err.name === 'NotFoundError') {
-        errorMessage = 'No camera found on this device.';
-      } else if (err.name === 'NotSupportedError') {
-        errorMessage = 'Camera is not supported on this device or browser.';
-      } else if (err.name === 'NotReadableError') {
-        errorMessage = 'Camera is already in use by another application.';
-      } else if (err.name === 'OverconstrainedError') {
-        errorMessage = 'Camera settings are not supported. Trying with basic settings...';
+        if (err.message) {
+          errorMessage = err.message;
+        } else if (err.name === 'NotAllowedError') {
+          errorMessage = 'Camera access was denied. Please allow camera permissions and try again.';
+        } else if (err.name === 'NotFoundError') {
+          errorMessage = 'No camera found on this device.';
+        } else if (err.name === 'NotSupportedError') {
+          errorMessage = 'Camera is not supported on this device or browser.';
+        } else if (err.name === 'NotReadableError') {
+          errorMessage = 'Camera is already in use by another application.';
+        } else if (err.name === 'OverconstrainedError') {
+          errorMessage = 'Camera settings are not supported. Trying with basic settings...';
 
-        // Try again with basic constraints
-        try {
-          const basicConstraints: MediaStreamConstraints = {
-            video: true,
-            audio: false,
-          };
-          const mediaStream = await navigator.mediaDevices.getUserMedia(basicConstraints);
-          setStream(mediaStream);
-          setHasPermission(true);
-          if (videoRef.current) {
-            videoRef.current.srcObject = mediaStream;
+          // Try again with basic constraints
+          try {
+            const basicConstraints: MediaStreamConstraints = {
+              video: true,
+              audio: false,
+            };
+            const mediaStream = await navigator.mediaDevices.getUserMedia(basicConstraints);
+            setStream(mediaStream);
+            setHasPermission(true);
+            if (videoRef.current) {
+              videoRef.current.srcObject = mediaStream;
+            }
+            return; // Success with basic constraints
+          } catch (basicErr: Error | unknown) {
+            if (basicErr instanceof Error) {
+              errorMessage = 'Camera access failed even with basic settings.';
+            } else {
+              errorMessage = 'Camera access failed even with basic settings.';
+            }
           }
-          return; // Success with basic constraints
-        } catch (basicErr) {
-          errorMessage = 'Camera access failed even with basic settings.';
         }
-      }
 
-      setError(errorMessage);
+        setError(errorMessage);
+      }
     }
   }, [stream, isCameraSupported]);
 
