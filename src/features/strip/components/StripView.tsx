@@ -35,8 +35,6 @@ export default function StripView(): React.JSX.Element {
         {/* Photo Strip */}
         <div className="order-2 lg:order-1">
           <PhotoStripCanvas
-            photos={photos}
-            layout={selectedLayout}
             showWatermark={true}
             className="w-full"
           />

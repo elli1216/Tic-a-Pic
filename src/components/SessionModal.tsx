@@ -1,32 +1,50 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 
-interface SessionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onCreateSession: (nickname?: string) => Promise<void>;
-  onLoadExistingSession: (sessionId: string) => Promise<void>;
+interface CreateSessionForm {
+  nickname: string;
 }
 
-export default function SessionModal({ isOpen, onClose, onCreateSession, onLoadExistingSession }: SessionModalProps) {
-  const [nickname, setNickname] = useState('');
-  const [sessionId, setSessionId] = useState('');
+interface LoadSessionForm {
+  sessionId: string;
+}
+
+export default function SessionModal() {
+  const showSessionModal = usePhotoboothStore((state) => state.showSessionModal);
+  const setShowSessionModal = usePhotoboothStore((state) => state.setShowSessionModal);
+  const createSession = usePhotoboothStore((state) => state.createSession);
+  const loadExistingSession = usePhotoboothStore((state) => state.loadExistingSession);
+
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<'create' | 'existing'>('create');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const createForm = useForm<CreateSessionForm>({
+    defaultValues: {
+      nickname: ''
+    }
+  });
+
+  const loadForm = useForm<LoadSessionForm>({
+    defaultValues: {
+      sessionId: ''
+    }
+  });
+
+  const onCreateSubmit = async (data: CreateSessionForm) => {
     if (isCreating) return;
 
     setIsCreating(true);
     try {
-      const trimmedNickname = nickname.trim();
-      await onCreateSession(trimmedNickname || undefined);
-      onClose();
+      const trimmedNickname = data.nickname.trim();
+      await createSession(trimmedNickname || undefined);
+      setShowSessionModal(false);
+      createForm.reset();
     } catch (error) {
-      // Error handling is done in parent component
+      // Error handling is done in store
     } finally {
       setIsCreating(false);
     }
@@ -37,34 +55,33 @@ export default function SessionModal({ isOpen, onClose, onCreateSession, onLoadE
 
     setIsCreating(true);
     try {
-      await onCreateSession();
-      onClose();
+      await createSession();
+      setShowSessionModal(false);
     } catch (error) {
-      // Error handling is done in parent component
+      // Error handling is done in store
     } finally {
       setIsCreating(false);
     }
   };
 
-  const handleLoadExisting = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isLoading || !sessionId.trim()) return;
+  const onLoadSubmit = async (data: LoadSessionForm) => {
+    if (isLoading || !data.sessionId.trim()) return;
 
     setIsLoading(true);
     try {
-      await onLoadExistingSession(sessionId.trim().toUpperCase());
-      onClose();
-      // Reset form
-      setSessionId('');
+      await loadExistingSession(data.sessionId.trim().toUpperCase());
+      setShowSessionModal(false);
+      // Reset form and mode
+      loadForm.reset();
       setMode('create');
     } catch (error) {
-      // Error handling is done in parent component
+      // Error handling is done in store
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!isOpen) return null;
+  if (!showSessionModal) return null;
 
   return (
     <div className="modal modal-open glass-effect">
@@ -100,7 +117,7 @@ export default function SessionModal({ isOpen, onClose, onCreateSession, onLoadE
 
         {/* Create Session Form */}
         {mode === 'create' && (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Session Nickname (Optional)</span>
@@ -109,9 +126,7 @@ export default function SessionModal({ isOpen, onClose, onCreateSession, onLoadE
                 type="text"
                 placeholder="e.g., 'Darla's Birthday', 'Squad Goals'..."
                 className="input input-bordered input-primary w-full"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                maxLength={50}
+                {...createForm.register('nickname', { maxLength: 50 })}
               />
               <label className="label">
                 <span className="label-text-alt text-base-content/60">
@@ -160,7 +175,7 @@ export default function SessionModal({ isOpen, onClose, onCreateSession, onLoadE
 
         {/* Existing Session Form */}
         {mode === 'existing' && (
-          <form onSubmit={handleLoadExisting} className="space-y-4">
+          <form onSubmit={loadForm.handleSubmit(onLoadSubmit)} className="space-y-4">
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Session ID</span>
@@ -169,12 +184,25 @@ export default function SessionModal({ isOpen, onClose, onCreateSession, onLoadE
                 type="text"
                 placeholder="e.g., A1B2-C3D4-E5F6"
                 className="input input-bordered input-primary w-full font-mono"
-                value={sessionId}
-                onChange={(e) => setSessionId(e.target.value.toUpperCase())}
-                maxLength={14}
-                pattern="[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}"
-                required
+                {...loadForm.register('sessionId', {
+                  required: 'Session ID is required',
+                  maxLength: 14,
+                  pattern: {
+                    value: /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/,
+                    message: 'Invalid session ID format'
+                  },
+                  onChange: (e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                  }
+                })}
               />
+              {loadForm.formState.errors.sessionId && (
+                <label className="label">
+                  <span className="label-text-alt text-error">
+                    {loadForm.formState.errors.sessionId.message}
+                  </span>
+                </label>
+              )}
               <label className="label">
                 <span className="label-text-alt text-base-content/60">
                   Enter the session ID from your previous visit
@@ -196,7 +224,7 @@ export default function SessionModal({ isOpen, onClose, onCreateSession, onLoadE
               <button
                 type="submit"
                 className="btn btn-primary flex-1"
-                disabled={isLoading || !sessionId.trim()}
+                disabled={isLoading || !loadForm.formState.isValid}
               >
                 {isLoading ? (
                   <>

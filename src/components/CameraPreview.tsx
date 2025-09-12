@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 
-interface CameraPreviewProps {
-  onCapture: (imageData: string) => void;
-  isCapturing?: boolean;
-}
-
-export default function CameraPreview({ onCapture, isCapturing = false }: CameraPreviewProps) {
+export default function CameraPreview() {
+  const isCapturing = usePhotoboothStore((state) => state.isCapturing);
+  const setIsCapturing = usePhotoboothStore((state) => state.setIsCapturing);
+  const addPhoto = usePhotoboothStore((state) => state.addPhoto);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -137,6 +136,8 @@ export default function CameraPreview({ onCapture, isCapturing = false }: Camera
   const capturePhoto = useCallback(() => {
     if (!videoRef.current || !canvasRef.current) return;
 
+    setIsCapturing(true);
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -152,8 +153,11 @@ export default function CameraPreview({ onCapture, isCapturing = false }: Camera
 
     // Get image data as base64
     const imageData = canvas.toDataURL('image/jpeg', 0.8);
-    onCapture(imageData);
-  }, [onCapture]);
+    addPhoto(imageData);
+
+    // Reset capturing state after a brief delay for visual feedback
+    setTimeout(() => setIsCapturing(false), 200);
+  }, [addPhoto, setIsCapturing]);
 
   // Switch camera (front/back)
   const switchCamera = useCallback(() => {

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
+import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 
 export interface LayoutConfig {
   id: string;
@@ -17,8 +18,6 @@ export interface LayoutConfig {
 }
 
 interface PhotoStripCanvasProps {
-  photos: string[]; // base64 image data
-  layout: LayoutConfig;
   showWatermark?: boolean;
   className?: string;
 }
@@ -36,12 +35,12 @@ const DEFAULT_LAYOUT: LayoutConfig = {
   background: '#ffffff',
 };
 
-export default function PhotoStripCanvas({ 
-  photos = [], 
-  layout = DEFAULT_LAYOUT, 
+export default function PhotoStripCanvas({
   showWatermark = true,
-  className = '' 
+  className = ''
 }: PhotoStripCanvasProps) {
+  const photos = usePhotoboothStore((state) => state.photos);
+  const layout = usePhotoboothStore((state) => state.selectedLayout);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -138,7 +137,7 @@ export default function PhotoStripCanvas({
           }
         } catch (error) {
           console.error('Error loading photo:', error);
-          
+
           // Draw placeholder
           ctx.fillStyle = '#9ca3af';
           ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
@@ -151,7 +150,7 @@ export default function PhotoStripCanvas({
         // Draw empty slot placeholder
         ctx.fillStyle = '#f9fafb';
         ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
-        
+
         // Add dashed border for empty slots
         ctx.setLineDash([5, 5]);
         ctx.strokeStyle = '#9ca3af';
@@ -220,7 +219,7 @@ export default function PhotoStripCanvas({
   return (
     <div className={`flex flex-col items-center ${className}`}>
       {/* Canvas Container */}
-      <div 
+      <div
         ref={containerRef}
         className="relative bg-white rounded-xl shadow-lg overflow-hidden"
         style={{ aspectRatio: '1/3' }}
@@ -240,7 +239,7 @@ export default function PhotoStripCanvas({
         >
           📥 Download
         </button>
-        
+
         <div className="tooltip" data-tip={showWatermark ? "QR watermark visible" : "QR watermark hidden"}>
           <div className={`badge ${showWatermark ? 'badge-primary' : 'badge-ghost'}`}>
             QR {showWatermark ? 'ON' : 'OFF'}

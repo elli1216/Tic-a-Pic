@@ -46,6 +46,8 @@ interface PhotoboothState {
 
   // Session management
   clearSession: () => void;
+  createSession: (nickname?: string) => Promise<void>;
+  loadExistingSession: (sessionId: string) => Promise<void>;
 }
 
 export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
@@ -121,5 +123,30 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
         background: '#ffffff',
       },
     });
+  },
+
+  createSession: async (nickname?: string) => {
+    const { createSession } = await import('@/lib/session');
+    try {
+      const newSession = await createSession(nickname);
+      set({ session: newSession });
+    } catch (error) {
+      console.error('Error creating session:', error);
+      throw error;
+    }
+  },
+
+  loadExistingSession: async (sessionId: string) => {
+    const { loadExistingSession } = await import('@/lib/session');
+    try {
+      const existingSession = await loadExistingSession(sessionId);
+      if (!existingSession) {
+        throw new Error('Session not found');
+      }
+      set({ session: existingSession });
+    } catch (error) {
+      console.error('Error loading session:', error);
+      throw error;
+    }
   },
 }));

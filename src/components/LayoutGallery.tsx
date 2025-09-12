@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { LayoutConfig } from './PhotoStripCanvas';
+import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
+import { saveLayout } from '@/lib/session';
+import toast from 'react-hot-toast';
 
 interface LayoutGalleryProps {
-  selectedLayout: LayoutConfig;
-  onLayoutSelect: (layout: LayoutConfig) => void;
   className?: string;
 }
 
@@ -142,7 +143,35 @@ function LayoutThumbnail({ layout, isSelected, onClick }: {
   );
 }
 
-export default function LayoutGallery({ selectedLayout, onLayoutSelect, className = '' }: LayoutGalleryProps) {
+export default function LayoutGallery({ className = '' }: LayoutGalleryProps) {
+  const selectedLayout = usePhotoboothStore((state) => state.selectedLayout);
+  const setSelectedLayout = usePhotoboothStore((state) => state.setSelectedLayout);
+  const photos = usePhotoboothStore((state) => state.photos);
+  const setAppState = usePhotoboothStore((state) => state.setAppState);
+
+
+  // Handle layout selection with validation
+  const handleLayoutSelect = (layout: LayoutConfig) => {
+    // Check if user has photos first
+    if (photos.length === 0) {
+      toast.error('Please add some photos first before choosing a layout!', {
+        position: 'top-right',
+      });
+      return;
+    }
+
+    // Save layout to store and localStorage
+    setSelectedLayout(layout);
+    saveLayout(layout);
+
+    // Show success message
+    toast.success(`Layout "${layout.name}" selected successfully!`, {
+      position: 'top-right',
+    });
+
+    // Go back to strip view
+    setAppState('strip');
+  };
   return (
     <div className={`w-full ${className}`}>
       {/* Header */}
@@ -160,7 +189,7 @@ export default function LayoutGallery({ selectedLayout, onLayoutSelect, classNam
             key={layout.id}
             layout={layout}
             isSelected={selectedLayout.id === layout.id}
-            onClick={() => onLayoutSelect(layout)}
+            onClick={() => handleLayoutSelect(layout)}
           />
         ))}
       </div>

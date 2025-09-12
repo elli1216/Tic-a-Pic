@@ -9,11 +9,10 @@ import { Toaster } from 'react-hot-toast';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import {
   getCurrentSession,
-  createSession,
   getStoredPhotos,
   getStoredLayout,
   clearSession,
-  loadExistingSession,
+
 } from '@/lib/session';
 import LayoutsView from '@/features/layouts/components/LayoutsView';
 import Header from '@/features/home/components/Header';
@@ -23,18 +22,15 @@ import toast from 'react-hot-toast';
  * Main photobooth application page
  */
 export default function Home(): React.JSX.Element {
-  const {
-    appState,
-    showSessionModal,
-    photos,
-    setSession,
-    setShowSessionModal,
-    setPhotos,
-    goToCamera,
-    goToStrip,
-    goToLayouts,
-    setSelectedLayout,
-  } = usePhotoboothStore();
+  const appState = usePhotoboothStore((state) => state.appState);
+  const photos = usePhotoboothStore((state) => state.photos);
+  const setSession = usePhotoboothStore((state) => state.setSession);
+  const setShowSessionModal = usePhotoboothStore((state) => state.setShowSessionModal);
+  const setPhotos = usePhotoboothStore((state) => state.setPhotos);
+  const setSelectedLayout = usePhotoboothStore((state) => state.setSelectedLayout);
+  const goToCamera = usePhotoboothStore((state) => state.goToCamera);
+  const goToStrip = usePhotoboothStore((state) => state.goToStrip);
+  const goToLayouts = usePhotoboothStore((state) => state.goToLayouts);
 
   const [isInitializing, setIsInitializing] = useState(true);
 
@@ -70,37 +66,6 @@ export default function Home(): React.JSX.Element {
     initializeApp();
   }, [setSession, setShowSessionModal, setPhotos, setSelectedLayout]);
 
-  // Handle session creation
-  const handleCreateSession = async (nickname?: string) => {
-    try {
-      const loadingToast = toast.loading('Creating session...');
-      const newSession = await createSession(nickname);
-      setSession(newSession);
-      toast.success('Session created successfully!', { id: loadingToast });
-    } catch (error) {
-      console.error('Error creating session:', error);
-      toast.error('Failed to create session. Please try again.');
-    }
-  };
-
-  // Handle loading existing session
-  const handleLoadExistingSession = async (sessionId: string) => {
-    try {
-      const loadingToast = toast.loading('Loading session...');
-      const existingSession = await loadExistingSession(sessionId);
-
-      if (!existingSession) {
-        toast.error('Session not found. Please check your session ID.', { id: loadingToast });
-        return;
-      }
-
-      setSession(existingSession);
-      toast.success(`Welcome back${existingSession.nickname ? `, ${existingSession.nickname}` : ''}!`, { id: loadingToast });
-    } catch (error) {
-      console.error('Error loading existing session:', error);
-      toast.error('Failed to load session. Please try again.');
-    }
-  };
 
   // Handle clear session
   const handleClearSession = () => {
@@ -129,9 +94,35 @@ export default function Home(): React.JSX.Element {
   if (isInitializing) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-300 flex items-center justify-center">
-        <div className="text-center">
-          <div className="loading loading-spinner loading-lg"></div>
-          <p className="mt-4 text-lg">Loading Tic-a-Pic...</p>
+        <div className="text-center space-y-6">
+          {/* Animated Logo/Icon */}
+          <div className="relative">
+            <div className="w-20 h-20 mx-auto mb-4 relative">
+              <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-25"></div>
+              <div className="relative w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-3xl text-white">📸</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Loading Spinner */}
+          <div className="flex justify-center">
+            <div className="loading loading-spinner loading-lg text-primary"></div>
+          </div>
+
+          {/* Loading Text */}
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-primary">Tic-a-Pic</h1>
+            <p className="text-lg text-base-content/70">Initializing your photo booth...</p>
+            <div className="flex items-center justify-center space-x-1 text-sm text-base-content/50">
+              <span>Setting up session</span>
+              <div className="flex space-x-1">
+                <div className="w-1 h-1 bg-primary rounded-full animate-pulse"></div>
+                <div className="w-1 h-1 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-1 h-1 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -144,61 +135,100 @@ export default function Home(): React.JSX.Element {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
-        {/* Camera State */}
-        {appState === 'camera' && <CameraView />}
+        <div className="max-w-6xl mx-auto">
+          {/* Camera State */}
+          {appState === 'camera' && (
+            <div className="animate-fade-in">
+              <CameraView />
+            </div>
+          )}
 
-        {/* Preview State */}
-        {appState === 'preview' && <PreviewView />}
+          {/* Preview State */}
+          {appState === 'preview' && (
+            <div className="animate-fade-in">
+              <PreviewView />
+            </div>
+          )}
 
-        {/* Photo Strip State */}
-        {appState === 'strip' && <StripView />}
-        {/* Layouts State */}
-        {appState === 'layouts' && (
-          <div className="space-y-6">
-            <LayoutsView />
-          </div>
-        )}
+          {/* Photo Strip State */}
+          {appState === 'strip' && (
+            <div className="animate-fade-in">
+              <StripView />
+            </div>
+          )}
+
+          {/* Layouts State */}
+          {appState === 'layouts' && (
+            <div className="space-y-6 animate-fade-in">
+              <LayoutsView />
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Bottom Navigation (Mobile) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-base-100/90 backdrop-blur-md border-t border-base-300 sm:hidden">
-        <div className="flex justify-around py-2">
+      <nav className="fixed bottom-0 left-0 right-0 bg-base-100/95 backdrop-blur-lg border-t border-base-300 shadow-lg sm:hidden z-50">
+        <div className="flex justify-around py-3 px-2">
           <button
             onClick={goToCamera}
-            className={`btn btn-ghost btn-sm ${appState === 'camera' ? 'btn-active' : ''}`}
+            className={`
+              flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200
+              ${appState === 'camera'
+                ? 'bg-primary text-primary-content shadow-md'
+                : 'text-base-content/70 hover:text-primary hover:bg-primary/10'
+              }
+            `}
           >
-            📷 Camera
+            <span className="text-xl">📷</span>
+            <span className="text-xs font-medium">Camera</span>
           </button>
           <button
             onClick={goToStrip}
-            className={`btn btn-ghost btn-sm ${appState === 'strip' ? 'btn-active' : ''} ${photos.length === 0 ? 'btn-disabled opacity-50' : ''}`}
+            className={`
+              flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 relative
+              ${appState === 'strip'
+                ? 'bg-primary text-primary-content shadow-md'
+                : 'text-base-content/70 hover:text-primary hover:bg-primary/10'
+              }
+              ${photos.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+            `}
             disabled={photos.length === 0}
             title={photos.length === 0 ? 'Take some photos first' : 'View photo strip'}
           >
-            🎞️ Strip {photos.length > 0 && `(${photos.length})`}
+            <span className="text-xl">🎞️</span>
+            <span className="text-xs font-medium">
+              Strip
+              {photos.length > 0 && (
+                <span className="ml-1 bg-secondary text-secondary-content rounded-full px-1.5 py-0.5 text-[10px] font-bold">
+                  {photos.length}
+                </span>
+              )}
+            </span>
           </button>
           <button
             onClick={goToLayouts}
-            className={`btn btn-ghost btn-sm ${appState === 'layouts' ? 'btn-active' : ''}`}
+            className={`
+              flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200
+              ${appState === 'layouts'
+                ? 'bg-primary text-primary-content shadow-md'
+                : 'text-base-content/70 hover:text-primary hover:bg-primary/10'
+              }
+            `}
           >
-            🎨 Layouts
+            <span className="text-xl">🎨</span>
+            <span className="text-xs font-medium">Layouts</span>
           </button>
         </div>
       </nav>
 
       {/* Session Modal */}
-      <SessionModal
-        isOpen={showSessionModal}
-        onClose={() => setShowSessionModal(false)}
-        onCreateSession={handleCreateSession}
-        onLoadExistingSession={handleLoadExistingSession}
-      />
+      <SessionModal />
 
       {/* Toast Notifications */}
       <Toaster />
 
       {/* Bottom padding for mobile nav */}
-      <div className="h-16 sm:hidden"></div>
+      <div className="h-20 sm:hidden"></div>
     </div>
   );
 }

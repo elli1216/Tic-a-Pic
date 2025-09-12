@@ -5,21 +5,8 @@ import CameraPreview from '@/components/CameraPreview';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 
 export default function CameraView(): React.JSX.Element {
-  const { photos, isCapturing } = usePhotoboothStore();
-  const setCurrentPhoto = usePhotoboothStore((state) => state.setCurrentPhoto);
-  const setAppState = usePhotoboothStore((state) => state.setAppState);
-  const setIsCapturing = usePhotoboothStore((state) => state.setIsCapturing);
+  const photos = usePhotoboothStore((state) => state.photos);
   const goToStrip = usePhotoboothStore((state) => state.goToStrip);
-
-  // Handle photo capture
-  const handleCapture = (imageData: string) => {
-    setIsCapturing(true);
-    setCurrentPhoto(imageData);
-    setAppState('preview');
-
-    // Reset capturing state after animation
-    setTimeout(() => setIsCapturing(false), 500);
-  };
 
   return (
     <div className="max-w-md mx-auto space-y-6">
@@ -30,10 +17,7 @@ export default function CameraView(): React.JSX.Element {
         </p>
       </div>
 
-      <CameraPreview
-        onCapture={handleCapture}
-        isCapturing={isCapturing}
-      />
+      <CameraPreview />
 
       {photos.length > 0 && (
         <div className="text-center">
