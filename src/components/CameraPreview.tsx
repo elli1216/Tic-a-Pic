@@ -73,7 +73,7 @@ export default function CameraPreview() {
       setIsCapturing(false);
       setError('Failed to capture photo. Please try again.');
     }
-  }, [addPhoto, setIsCapturing, isMirrored, facingMode, isCapturing]);
+  }, [addPhoto, setIsCapturing, isMirrored, facingMode, isCapturing, setError]);
 
   // Switch camera (front/back)
   const switchCamera = useCallback(() => {
@@ -85,18 +85,19 @@ export default function CameraPreview() {
         setIsMirrored(newFacing === 'user');
       } catch (err) {
         console.error('Error switching camera:', err);
+        setError('Failed to switch camera. Please try again.');
         // Fallback to manual switching if library method fails
         const newFacing = facingMode === 'user' ? 'environment' : 'user';
         setFacingMode(newFacing as 'user' | 'environment');
         setIsMirrored(newFacing === 'user');
       }
     }
-  }, [facingMode]);
+  }, [facingMode, setFacingMode, setIsMirrored, setError]);
 
   // Toggle mirror/flip
   const toggleMirror = useCallback(() => {
     setIsMirrored(!isMirrored);
-  }, []);
+  }, [isMirrored, setIsMirrored]);
 
   // Add timeout for camera initialization
   useEffect(() => {
@@ -109,7 +110,7 @@ export default function CameraPreview() {
     }, 10000); // 10 second timeout
 
     return () => clearTimeout(timeout);
-  }, [isInitializing, cameraReady]);
+  }, [isInitializing, cameraReady, setError, setIsInitializing]);
 
   // Handle component mount - reset states and check browser compatibility
   useEffect(() => {
@@ -146,7 +147,7 @@ export default function CameraPreview() {
       setCameraReady(false);
       setError(null);
     }
-  }, []);
+  }, [setError, setIsInitializing, setCameraReady]);
 
 
   // Error state
@@ -156,7 +157,7 @@ export default function CameraPreview() {
     return (
       <div className="flex flex-col items-center justify-center h-96 bg-base-200 rounded-2xl p-8">
         <div className="text-6xl mb-4">
-          {isHttpsError ? '🔒' : <CameraOffIcon size={64} />}
+          {isHttpsError ? '🔒' : <CameraOffIcon size={64} className="text-warning" />}
         </div>
         <h3 className="text-xl font-bold mb-2">
           {isHttpsError ? 'Secure Connection Required' : 'Camera Access Issue'}
@@ -196,7 +197,7 @@ export default function CameraPreview() {
         <div className="loading loading-spinner loading-lg text-primary mb-4"></div>
         <p className="text-base-content/70 mb-4">Initializing camera...</p>
         <div className="text-sm text-base-content/50 text-center max-w-sm">
-          <p>If the camera doesn't load:</p>
+          <p>If the camera doesn&apos;t load:</p>
           <ul className="list-disc list-inside mt-2 space-y-1 text-left">
             <li>Make sure you allow camera permissions</li>
             <li>Close other apps using the camera</li>

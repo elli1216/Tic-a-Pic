@@ -5,6 +5,7 @@ import { LayoutConfig } from './PhotoStripCanvas';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import { saveLayout } from '@/lib/session';
 import { toast } from 'react-hot-toast';
+import { Lightbulb } from 'lucide-react';
 
 interface LayoutGalleryProps {
   className?: string;
@@ -206,8 +207,8 @@ export default function LayoutGallery({ className = '' }: LayoutGalleryProps) {
 
       {/* Usage tip */}
       <div className="mt-4 text-center space-y-2">
-        <p className="text-xs text-base-content/60">
-          💡 Tip: Take photos first, then choose your favorite layout!
+        <p className="flex items-center justify-center gap-1 text-xs text-base-content/60">
+          <Lightbulb size={12} className="text-warning" /> Tip: Take photos first, then choose your favorite layout!
         </p>
         {photos.length > 0 && (
           <p className="text-xs text-primary">

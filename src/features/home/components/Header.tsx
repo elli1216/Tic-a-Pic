@@ -83,7 +83,7 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
             {/* Session Dropdown */}
             {session && (
               <div className="dropdown dropdown-end">
-                <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
+                <div tabIndex={0} role="button" className="btn btn-ghost btn-sm flex items-center gap-1 justify-center">
                   <UserIcon size={16} /> Session
                   <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -98,7 +98,7 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
                       <span className="text-xs">Session ID:</span>
                       <button
                         onClick={handleCopySessionId}
-                        className="badge badge-primary badge-sm font-mono hover:badge-primary-focus transition-colors cursor-pointer group relative"
+                        className="badge badge-primary flex items-center gap-1 justify-center badge-sm font-mono hover:badge-primary-focus transition-colors cursor-pointer group relative"
                         title="Click to copy session ID"
                       >
                         <CopyIcon size={12} /> {session.session_id}
