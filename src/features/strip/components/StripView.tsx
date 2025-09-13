@@ -5,6 +5,7 @@ import PhotoStripCanvas from '@/components/PhotoStripCanvas';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import { removePhoto } from '@/lib/session';
 import Image from 'next/image';
+import { CameraIcon, LayoutIcon } from 'lucide-react';
 
 export default function StripView(): React.JSX.Element {
   const {
@@ -49,13 +50,13 @@ export default function StripView(): React.JSX.Element {
               onClick={goToCamera}
               className="btn btn-primary"
             >
-              📷 Add Photo
+              <CameraIcon size={16} /> Add Photo
             </button>
             <button
               onClick={goToLayouts}
               className="btn btn-outline"
             >
-              🎨 Change Layout
+              <LayoutIcon size={16} /> Change Layout
             </button>
           </div>
 
