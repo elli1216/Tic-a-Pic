@@ -1,214 +1,97 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
+import { Camera, CameraType } from 'react-camera-pro';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
-import { LegacyNavigator } from '@/shared/types/TYPES';
+import { CameraIcon, FlipVertical, SwitchCameraIcon } from 'lucide-react';
 
 export default function CameraPreview() {
   const isCapturing = usePhotoboothStore((state) => state.isCapturing);
   const setIsCapturing = usePhotoboothStore((state) => state.setIsCapturing);
   const addPhoto = usePhotoboothStore((state) => state.addPhoto);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [error, setError] = useState<string | null>(null);
+
+  const cameraRef = useRef<CameraType>(null);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
   const [isMirrored, setIsMirrored] = useState<boolean>(true); // Default to mirrored for front camera
+  const [error, setError] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);
 
-  // Check if camera API is available
-  const isCameraSupported = useCallback(() => {
-    // Check if we're in a secure context (HTTPS or localhost)
-    const isSecureContext = window.isSecureContext ||
-      location.protocol === 'https:' ||
-      location.hostname === 'localhost' ||
-      location.hostname === '127.0.0.1';
-
-    // Check if mediaDevices API is available
-    let hasMediaDevices = !!(navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-
-    // Polyfill for older browsers
-    if (!hasMediaDevices && navigator) {
-      // Check for older getUserMedia implementations
-      const legacyNavigator = navigator as LegacyNavigator;
-      const getUserMedia = legacyNavigator.getUserMedia ||
-        legacyNavigator.webkitGetUserMedia ||
-        legacyNavigator.mozGetUserMedia ||
-        legacyNavigator.msGetUserMedia;
-
-      if (getUserMedia) {
-        // Create a polyfill for navigator.mediaDevices
-        if (!navigator.mediaDevices) {
-          legacyNavigator.mediaDevices = {} as MediaDevices;
-        }
-
-        if (!navigator.mediaDevices.getUserMedia) {
-          navigator.mediaDevices.getUserMedia = function (constraints: MediaStreamConstraints) {
-            return new Promise((resolve, reject) => {
-              getUserMedia.call(navigator, constraints, resolve, reject);
-            });
-          };
-        }
-        hasMediaDevices = true;
-      }
-    }
-
-    return { isSecureContext, hasMediaDevices };
-  }, []);
-
-  // Initialize camera
-  const initCamera = useCallback(async (facing: 'user' | 'environment') => {
-    try {
-      setError(null);
-
-      // Check camera support
-      const { isSecureContext, hasMediaDevices } = isCameraSupported();
-
-      if (!isSecureContext) {
-        throw new Error('Camera access requires HTTPS. Please use a secure connection.');
-      }
-
-      if (!hasMediaDevices) {
-        throw new Error('Camera API is not supported in this browser or device.');
-      }
-
-      // Stop existing stream
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: facing,
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-        audio: false,
-      };
-
-      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-      setStream(mediaStream);
-      setHasPermission(true);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-    } catch (err: Error | unknown) {
-      if (err instanceof Error) {
-        console.error('Error accessing camera:', err);
-        setHasPermission(false);
-
-        // Provide more specific error messages
-        let errorMessage = 'Unable to access camera.';
-
-        if (err.message) {
-          errorMessage = err.message;
-        } else if (err.name === 'NotAllowedError') {
-          errorMessage = 'Camera access was denied. Please allow camera permissions and try again.';
-        } else if (err.name === 'NotFoundError') {
-          errorMessage = 'No camera found on this device.';
-        } else if (err.name === 'NotSupportedError') {
-          errorMessage = 'Camera is not supported on this device or browser.';
-        } else if (err.name === 'NotReadableError') {
-          errorMessage = 'Camera is already in use by another application.';
-        } else if (err.name === 'OverconstrainedError') {
-          errorMessage = 'Camera settings are not supported. Trying with basic settings...';
-
-          // Try again with basic constraints
-          try {
-            const basicConstraints: MediaStreamConstraints = {
-              video: true,
-              audio: false,
-            };
-            const mediaStream = await navigator.mediaDevices.getUserMedia(basicConstraints);
-            setStream(mediaStream);
-            setHasPermission(true);
-            if (videoRef.current) {
-              videoRef.current.srcObject = mediaStream;
-            }
-            return; // Success with basic constraints
-          } catch (basicErr: Error | unknown) {
-            if (basicErr instanceof Error) {
-              errorMessage = 'Camera access failed even with basic settings.';
-            } else {
-              errorMessage = 'Camera access failed even with basic settings.';
-            }
-          }
-        }
-
-        setError(errorMessage);
-      }
-    }
-  }, [stream, isCameraSupported]);
-
-  // Capture photo
+  // Capture photo using react-camera-pro
   const capturePhoto = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!cameraRef.current || isCapturing) return;
 
-    setIsCapturing(true);
+    try {
+      setIsCapturing(true);
 
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+      // Take photo - react-camera-pro returns base64 data URL or ImageData
+      const photo = cameraRef.current.takePhoto('base64url');
 
-    if (!ctx) return;
+      if (photo && typeof photo === 'string') {
+        // Handle mirroring by creating a canvas and flipping if needed
+        if (isMirrored && facingMode === 'user') {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
 
-    // Set canvas dimensions to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+            if (ctx) {
+              canvas.width = img.width;
+              canvas.height = img.height;
 
-    // Handle mirroring for captured photo
-    if (isMirrored) {
-      // Save current transform state
-      ctx.save();
-      // Flip horizontally
-      ctx.scale(-1, 1);
-      // Draw video frame to canvas (with negative x offset due to flip)
-      ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-      // Restore transform state
-      ctx.restore();
-    } else {
-      // Draw video frame to canvas normally
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              // Flip horizontally
+              ctx.save();
+              ctx.scale(-1, 1);
+              ctx.drawImage(img, -canvas.width, 0, canvas.width, canvas.height);
+              ctx.restore();
+
+              const mirroredPhoto = canvas.toDataURL('image/jpeg', 0.8);
+              addPhoto(mirroredPhoto);
+            } else {
+              addPhoto(photo);
+            }
+          };
+          img.src = photo;
+        } else {
+          addPhoto(photo);
+        }
+      }
+
+      // Reset capturing state after a brief delay for visual feedback
+      setTimeout(() => setIsCapturing(false), 200);
+    } catch (err) {
+      console.error('Error capturing photo:', err);
+      setIsCapturing(false);
+      setError('Failed to capture photo. Please try again.');
     }
-
-    // Get image data as base64
-    const imageData = canvas.toDataURL('image/jpeg', 0.8);
-    addPhoto(imageData);
-
-    // Reset capturing state after a brief delay for visual feedback
-    setTimeout(() => setIsCapturing(false), 200);
-  }, [addPhoto, setIsCapturing, isMirrored]);
+  }, [addPhoto, setIsCapturing, isMirrored, facingMode, isCapturing]);
 
   // Switch camera (front/back)
   const switchCamera = useCallback(() => {
-    const newFacing = facingMode === 'user' ? 'environment' : 'user';
-    setFacingMode(newFacing);
-    // Auto-set mirror based on camera: front camera typically mirrored, back camera not
-    setIsMirrored(newFacing === 'user');
-    initCamera(newFacing);
-  }, [facingMode, initCamera]);
+    if (cameraRef.current) {
+      try {
+        const newFacing = cameraRef.current.switchCamera();
+        setFacingMode(newFacing);
+        // Auto-set mirror based on camera: front camera typically mirrored, back camera not
+        setIsMirrored(newFacing === 'user');
+      } catch (err) {
+        console.error('Error switching camera:', err);
+        // Fallback to manual switching if library method fails
+        const newFacing = facingMode === 'user' ? 'environment' : 'user';
+        setFacingMode(newFacing);
+        setIsMirrored(newFacing === 'user');
+      }
+    }
+  }, [facingMode]);
 
   // Toggle mirror/flip
   const toggleMirror = useCallback(() => {
     setIsMirrored(prev => !prev);
   }, []);
 
-  // Initialize camera on mount
-  useEffect(() => {
-    initCamera(facingMode);
 
-    // Cleanup on unmount
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [facingMode, initCamera, stream]);
-
-  // Permission denied state
-  if (hasPermission === false) {
-    const isHttpsError = error?.includes('HTTPS') || error?.includes('secure connection');
+  // Error state
+  if (error) {
+    const isHttpsError = error.includes('HTTPS') || error.includes('secure connection');
 
     return (
       <div className="flex flex-col items-center justify-center h-96 bg-base-200 rounded-2xl p-8">
@@ -218,9 +101,11 @@ export default function CameraPreview() {
         <h3 className="text-xl font-bold mb-2">
           {isHttpsError ? 'Secure Connection Required' : 'Camera Access Issue'}
         </h3>
-        <p className="text-base-content/70 text-center mb-4 max-w-sm">
-          {error || 'Please allow camera access to take photos'}
-        </p>
+        <div className="text-base-content/70 text-center mb-4 max-w-sm">
+          <div className="whitespace-pre-line text-sm">
+            {error}
+          </div>
+        </div>
         {isHttpsError && (
           <div className="text-sm text-base-content/50 text-center mb-4 max-w-sm">
             <p>Camera access requires:</p>
@@ -230,7 +115,10 @@ export default function CameraPreview() {
           </div>
         )}
         <button
-          onClick={() => initCamera(facingMode)}
+          onClick={() => {
+            setError(null);
+            setIsInitializing(true);
+          }}
           className="btn btn-primary"
         >
           Try Again
@@ -240,7 +128,7 @@ export default function CameraPreview() {
   }
 
   // Loading state
-  if (hasPermission === null) {
+  if (isInitializing) {
     return (
       <div className="flex flex-col items-center justify-center h-96 bg-base-200 rounded-2xl">
         <div className="loading loading-spinner loading-lg text-primary mb-4"></div>
@@ -251,16 +139,32 @@ export default function CameraPreview() {
 
   return (
     <div className="relative w-full max-w-md mx-auto">
-      {/* Video Preview */}
+      {/* Camera Preview */}
       <div className="relative aspect-[3/4] bg-black rounded-2xl overflow-hidden shadow-2xl">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className={`w-full h-full object-cover transition-transform duration-300 ${isMirrored ? 'scale-x-[-1]' : ''
+        <div
+          className={`w-full h-full transition-transform duration-300 ${isMirrored && facingMode === 'user' ? 'scale-x-[-1]' : ''
             }`}
-        />
+        >
+          <Camera
+            ref={cameraRef}
+            facingMode={facingMode}
+            aspectRatio="cover"
+            numberOfCamerasCallback={(numberOfCameras) => {
+              console.log('Number of cameras:', numberOfCameras);
+            }}
+            errorMessages={{
+              noCameraAccessible: 'No camera device accessible. Please connect your camera or try a different browser.',
+              permissionDenied: 'Permission denied. Please refresh and give camera permission.',
+              switchCamera: 'It is not possible to switch camera to different one because there is only one video device accessible.',
+              canvas: 'Canvas is not supported.'
+            }}
+            videoReadyCallback={() => {
+              console.log('Camera video ready');
+              setIsInitializing(false);
+              setError(null);
+            }}
+          />
+        </div>
 
         {/* Camera overlay UI */}
         <div className="absolute inset-0 pointer-events-none">
@@ -287,7 +191,7 @@ export default function CameraPreview() {
             className="btn btn-ghost btn-circle text-xl"
             title="Switch Camera"
           >
-            🔄
+            <SwitchCameraIcon className="w-6 h-6" />
           </button>
 
           {/* Mirror Toggle Button */}
@@ -297,26 +201,24 @@ export default function CameraPreview() {
               }`}
             title={isMirrored ? 'Disable Mirror' : 'Enable Mirror'}
           >
-            🪞
+            <FlipVertical className="w-6 h-6" />
           </button>
         </div>
 
         {/* Capture Button */}
         <button
           onClick={capturePhoto}
+          onTouchStart={(e) => e.preventDefault()} // Prevent mobile touch delay
           disabled={isCapturing}
-          className="btn btn-circle btn-lg btn-primary shadow-lg hover:shadow-xl transition-all duration-200"
+          className="btn btn-circle btn-lg btn-primary shadow-lg hover:shadow-xl transition-all duration-200 touch-manipulation"
           title="Take Photo"
         >
-          <span className="text-2xl">📸</span>
+          <CameraIcon className="w-6 h-6" />
         </button>
 
         {/* Right Controls - Placeholder for balance */}
         <div className="w-20"></div>
       </div>
-
-      {/* Hidden canvas for capture */}
-      <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 }
