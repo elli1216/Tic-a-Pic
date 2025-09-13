@@ -204,18 +204,6 @@ export default function CameraPreview() {
             <li>Try refreshing the page</li>
           </ul>
         </div>
-        <button
-          onClick={() => {
-            console.log('Manual refresh triggered');
-            setIsInitializing(true);
-            setCameraReady(false);
-            setError(null);
-            setCameraKey(cameraKey + 1); // Force re-render of Camera component
-          }}
-          className="btn btn-outline btn-sm mt-4"
-        >
-          Refresh Camera
-        </button>
       </div>
     );
   }
