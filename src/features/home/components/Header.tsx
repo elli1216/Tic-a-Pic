@@ -2,6 +2,7 @@ import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import React from 'react';
 import ThemeToggle from '@/features/common/components/ThemeToggle';
 import { toast } from 'react-hot-toast';
+import { CameraIcon, FilmIcon, LayoutIcon, UserIcon, TrashIcon, CopyIcon } from 'lucide-react';
 
 interface HeaderProps {
   onClearSession?: () => void;
@@ -46,7 +47,6 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <span className="text-2xl">📸</span>
             <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text">
               Tic a Pic
             </h1>
@@ -58,7 +58,7 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
               onClick={goToCamera}
               className={`btn btn-ghost btn-sm ${appState === 'camera' ? 'btn-active' : ''}`}
             >
-              📷 Camera
+              <CameraIcon size={16} /> Camera
             </button>
             <button
               onClick={goToStrip}
@@ -66,13 +66,13 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
               disabled={photos.length === 0}
               title={photos.length === 0 ? 'Take some photos first' : 'View photo strip'}
             >
-              🎞️ Strip {photos.length > 0 && `(${photos.length})`}
+              <FilmIcon size={16} /> Strip {photos.length > 0 && `(${photos.length})`}
             </button>
             <button
               onClick={goToLayouts}
               className={`btn btn-ghost btn-sm ${appState === 'layouts' ? 'btn-active' : ''}`}
             >
-              🎨 Layouts
+              <LayoutIcon size={16} /> Layouts
             </button>
           </nav>
 
@@ -84,7 +84,7 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
             {session && (
               <div className="dropdown dropdown-end">
                 <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
-                  👤 Session
+                  <UserIcon size={16} /> Session
                   <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -94,33 +94,28 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
                     <span>Current Session</span>
                   </li>
                   <li>
-                    <div className="text-xs text-base-content/50 px-2 pb-1">
-                      💡 Click session ID to copy
-                    </div>
-                  </li>
-                  <li>
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-sm">Session ID:</span>
+                      <span className="text-xs">Session ID:</span>
                       <button
                         onClick={handleCopySessionId}
                         className="badge badge-primary badge-sm font-mono hover:badge-primary-focus transition-colors cursor-pointer group relative"
                         title="Click to copy session ID"
                       >
-                        {session.session_id}
+                        <CopyIcon size={12} /> {session.session_id}
                       </button>
                     </div>
                   </li>
                   {session.nickname && (
                     <li>
                       <div className="flex items-center justify-between py-2">
-                        <span className="text-sm">Nickname:</span>
+                        <span className="text-xs">Nickname:</span>
                         <span className="text-sm text-base-content/70">{session.nickname}</span>
                       </div>
                     </li>
                   )}
                   <li>
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-sm">Photos:</span>
+                      <span className="text-xs">Photos:</span>
                       <span className="badge badge-ghost badge-sm">{photos.length}</span>
                     </div>
                   </li>
@@ -131,7 +126,7 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
                         onClick={onClearSession}
                         className="text-error hover:bg-error/20 hover:text-error-content"
                       >
-                        🗑️ Clear Session
+                        <TrashIcon size={16} /> Clear Session
                       </button>
                     </li>
                   )}
