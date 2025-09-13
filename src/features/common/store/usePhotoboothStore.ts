@@ -31,10 +31,6 @@ interface PhotoboothState {
   selectedLayout: LayoutConfig;
   setSelectedLayout: (layout: LayoutConfig) => void;
 
-  // UI state
-  isCapturing: boolean;
-  setIsCapturing: (capturing: boolean) => void;
-
   // Toast/notifications
   toast: { message: string; type: 'success' | 'error' | 'warning' } | null;
   setToast: (
@@ -71,7 +67,6 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
     ],
     background: '#ffffff',
   },
-  isCapturing: false,
   toast: null,
 
   // Setters
@@ -81,7 +76,6 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
   setPhotos: (photos) => set({ photos }),
   setCurrentPhoto: (currentPhoto) => set({ currentPhoto }),
   setSelectedLayout: (selectedLayout) => set({ selectedLayout }),
-  setIsCapturing: (isCapturing) => set({ isCapturing }),
   setToast: (toast) => set({ toast }),
 
   // Photo management

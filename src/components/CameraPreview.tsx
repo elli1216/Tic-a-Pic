@@ -8,10 +8,9 @@ import { useCameraStore } from '@/features/common/store/useCameraStore';
 import { FacingMode } from '@/shared/types/TYPES';
 
 export default function CameraPreview() {
-  const isCapturing = usePhotoboothStore((state) => state.isCapturing);
-  const setIsCapturing = usePhotoboothStore((state) => state.setIsCapturing);
+  const isCapturing = useCameraStore((state) => state.isCapturing);
+  const setIsCapturing = useCameraStore((state) => state.setIsCapturing);
   const addPhoto = usePhotoboothStore((state) => state.addPhoto);
-
   const cameraRef = useRef<CameraType>(null);
   const isMirrored = useCameraStore((state) => state.isMirrored);
   const facingMode = useCameraStore((state) => state.facingMode);
@@ -233,12 +232,6 @@ export default function CameraPreview() {
               permissionDenied: 'Permission denied. Please refresh and give camera permission.',
               switchCamera: 'It is not possible to switch camera to different one because there is only one video device accessible.',
               canvas: 'Canvas is not supported.'
-            }}
-            videoReadyCallback={() => {
-              console.log('Camera video ready - camera initialized successfully');
-              setIsInitializing(false);
-              setCameraReady(true);
-              setError(null);
             }}
           />
         </div>
