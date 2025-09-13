@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import { toast } from 'react-hot-toast';
+import { KeyRound, PlusCircle, SearchIcon } from 'lucide-react';
 
 interface CreateSessionForm {
   nickname: string;
@@ -98,7 +99,7 @@ export default function SessionModal() {
       <div className="modal-box max-w-md relative z-10">
         {/* Header */}
         <div className="text-center mb-6">
-          <h3 className="text-2xl font-bold text-primary mb-2">Welcome to Tic a Pic! 📸</h3>
+          <h3 className="text-2xl font-bold text-primary mb-2">Welcome to Tic a Pic!</h3>
           <p className="text-base-content/70">
             {mode === 'create'
               ? "Want to save your photobooth session? Give it a fun nickname!"
@@ -168,7 +169,7 @@ export default function SessionModal() {
                     Creating...
                   </>
                 ) : (
-                  'Create Session 🎉'
+                  <span className="flex items-center gap-1"><PlusCircle size={16} /> Create Session</span>
                 )}
               </button>
               <button
@@ -222,7 +223,7 @@ export default function SessionModal() {
 
             {/* Info */}
             <div className="bg-info/10 rounded-lg p-4">
-              <h4 className="font-semibold mb-2 text-info">🔍 Find Your Session ID</h4>
+              <h4 className="font-semibold mb-2 text-info flex items-center gap-2"><SearchIcon size={16} /> Find Your Session ID</h4>
               <p className="text-sm text-base-content/80">
                 Your session ID was displayed when you first created your session.
                 It looks like <code className="bg-base-300 px-1 rounded">A1B2-C3D4-E5F6</code>
@@ -242,7 +243,7 @@ export default function SessionModal() {
                     Loading...
                   </>
                 ) : (
-                  'Load Session 🔓'
+                  <span className="flex items-center gap-1"><KeyRound size={16} /> Load Session</span>
                 )}
               </button>
               <button
