@@ -106,6 +106,8 @@ export default function StripView(): React.JSX.Element {
                           src={photo}
                           alt={`Photo ${index + 1}`}
                           className="w-full aspect-square object-cover rounded-lg"
+                          width={100}
+                          height={100}
                         />
                         <button
                           onClick={() => handleRemovePhoto(index)}

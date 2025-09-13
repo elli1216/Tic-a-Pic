@@ -18,6 +18,7 @@ import LayoutsView from '@/features/layouts/components/LayoutsView';
 import Header from '@/features/home/components/Header';
 import { toast } from 'react-hot-toast';
 import useThemeStore from '@/features/common/store/useThemeStore';
+import { CameraIcon, FilmIcon, LayoutIcon } from 'lucide-react';
 
 /**
  * Main photobooth application page
@@ -181,7 +182,7 @@ export default function Home(): React.JSX.Element {
               }
             `}
           >
-            <span className="text-xl">📷</span>
+            <CameraIcon className="text-xl" />
             <span className="text-xs font-medium">Camera</span>
           </button>
           <button
@@ -197,7 +198,7 @@ export default function Home(): React.JSX.Element {
             disabled={photos.length === 0}
             title={photos.length === 0 ? 'Take some photos first' : 'View photo strip'}
           >
-            <span className="text-xl">🎞️</span>
+            <FilmIcon className="text-xl" />
             <span className="text-xs font-medium">
               Strip
               {photos.length > 0 && (
@@ -217,7 +218,7 @@ export default function Home(): React.JSX.Element {
               }
             `}
           >
-            <span className="text-xl">🎨</span>
+            <LayoutIcon className="text-xl" />
             <span className="text-xs font-medium">Layouts</span>
           </button>
         </div>
