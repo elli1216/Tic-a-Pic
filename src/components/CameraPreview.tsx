@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { Camera, CameraType } from 'react-camera-pro';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
-import { CameraIcon, FlipVertical, SwitchCameraIcon } from 'lucide-react';
+import { CameraIcon, CameraOffIcon, FlipVertical, SwitchCameraIcon } from 'lucide-react';
+import { useCameraStore } from '@/features/common/store/useCameraStore';
+import { FacingMode } from '@/shared/types/TYPES';
 
 export default function CameraPreview() {
   const isCapturing = usePhotoboothStore((state) => state.isCapturing);
@@ -11,12 +13,18 @@ export default function CameraPreview() {
   const addPhoto = usePhotoboothStore((state) => state.addPhoto);
 
   const cameraRef = useRef<CameraType>(null);
-  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
-  const [isMirrored, setIsMirrored] = useState<boolean>(true); // Default to mirrored for front camera
-  const [error, setError] = useState<string | null>(null);
-  const [isInitializing, setIsInitializing] = useState<boolean>(true);
-  const [cameraReady, setCameraReady] = useState<boolean>(false);
-  const [cameraKey, setCameraKey] = useState<number>(0);
+  const isMirrored = useCameraStore((state) => state.isMirrored);
+  const facingMode = useCameraStore((state) => state.facingMode);
+  const setFacingMode = useCameraStore((state) => state.setFacingMode);
+  const setIsMirrored = useCameraStore((state) => state.setIsMirrored);
+  const error = useCameraStore((state) => state.error);
+  const setError = useCameraStore((state) => state.setError);
+  const isInitializing = useCameraStore((state) => state.isInitializing);
+  const setIsInitializing = useCameraStore((state) => state.setIsInitializing);
+  const cameraReady = useCameraStore((state) => state.cameraReady);
+  const setCameraReady = useCameraStore((state) => state.setCameraReady);
+  const cameraKey = useCameraStore((state) => state.cameraKey);
+  const setCameraKey = useCameraStore((state) => state.setCameraKey);
 
   // Capture photo using react-camera-pro
   const capturePhoto = useCallback(() => {
@@ -72,14 +80,14 @@ export default function CameraPreview() {
     if (cameraRef.current) {
       try {
         const newFacing = cameraRef.current.switchCamera();
-        setFacingMode(newFacing);
+        setFacingMode(newFacing as 'user' | 'environment');
         // Auto-set mirror based on camera: front camera typically mirrored, back camera not
         setIsMirrored(newFacing === 'user');
       } catch (err) {
         console.error('Error switching camera:', err);
         // Fallback to manual switching if library method fails
         const newFacing = facingMode === 'user' ? 'environment' : 'user';
-        setFacingMode(newFacing);
+        setFacingMode(newFacing as 'user' | 'environment');
         setIsMirrored(newFacing === 'user');
       }
     }
@@ -87,7 +95,7 @@ export default function CameraPreview() {
 
   // Toggle mirror/flip
   const toggleMirror = useCallback(() => {
-    setIsMirrored(prev => !prev);
+    setIsMirrored(!isMirrored);
   }, []);
 
   // Add timeout for camera initialization
@@ -148,7 +156,7 @@ export default function CameraPreview() {
     return (
       <div className="flex flex-col items-center justify-center h-96 bg-base-200 rounded-2xl p-8">
         <div className="text-6xl mb-4">
-          {isHttpsError ? '🔒' : '📸'}
+          {isHttpsError ? '🔒' : <CameraOffIcon size={64} />}
         </div>
         <h3 className="text-xl font-bold mb-2">
           {isHttpsError ? 'Secure Connection Required' : 'Camera Access Issue'}
@@ -171,7 +179,7 @@ export default function CameraPreview() {
             setError(null);
             setIsInitializing(true);
             setCameraReady(false);
-            setCameraKey(prev => prev + 1); // Force re-render of Camera component
+            setCameraKey(cameraKey + 1); // Force re-render of Camera component
           }}
           className="btn btn-primary"
         >
@@ -201,7 +209,7 @@ export default function CameraPreview() {
             setIsInitializing(true);
             setCameraReady(false);
             setError(null);
-            setCameraKey(prev => prev + 1); // Force re-render of Camera component
+            setCameraKey(cameraKey + 1); // Force re-render of Camera component
           }}
           className="btn btn-outline btn-sm mt-4"
         >
@@ -222,7 +230,7 @@ export default function CameraPreview() {
           <Camera
             key={cameraKey}
             ref={cameraRef}
-            facingMode={facingMode}
+            facingMode={facingMode as FacingMode}
             aspectRatio="cover"
             numberOfCamerasCallback={(numberOfCameras) => {
               console.log('Number of cameras detected:', numberOfCameras);

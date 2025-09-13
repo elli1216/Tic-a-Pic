@@ -84,3 +84,5 @@ export interface LegacyNavigator extends Navigator {
   ) => void;
   mediaDevices: MediaDevices;
 }
+
+export type FacingMode = 'user' | 'environment';
