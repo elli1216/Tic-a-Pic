@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { Camera, CameraType } from 'react-camera-pro';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import { CameraIcon, FlipVertical, SwitchCameraIcon } from 'lucide-react';
@@ -15,6 +15,8 @@ export default function CameraPreview() {
   const [isMirrored, setIsMirrored] = useState<boolean>(true); // Default to mirrored for front camera
   const [error, setError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState<boolean>(true);
+  const [cameraReady, setCameraReady] = useState<boolean>(false);
+  const [cameraKey, setCameraKey] = useState<number>(0);
 
   // Capture photo using react-camera-pro
   const capturePhoto = useCallback(() => {
@@ -88,6 +90,56 @@ export default function CameraPreview() {
     setIsMirrored(prev => !prev);
   }, []);
 
+  // Add timeout for camera initialization
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isInitializing && !cameraReady) {
+        console.error('Camera initialization timeout');
+        setError('Camera failed to initialize. This might be due to:\n• Camera permissions not granted\n• Camera is being used by another application\n• Browser compatibility issues\n• Try refreshing the page or using a different browser');
+        setIsInitializing(false);
+      }
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [isInitializing, cameraReady]);
+
+  // Handle component mount - reset states and check browser compatibility
+  useEffect(() => {
+    console.log('CameraPreview component mounted');
+
+    // Check browser compatibility
+    const checkBrowserSupport = () => {
+      // Check for HTTPS requirement
+      const isSecure = window.isSecureContext ||
+        location.protocol === 'https:' ||
+        location.hostname === 'localhost' ||
+        location.hostname === '127.0.0.1';
+
+      if (!isSecure) {
+        setError('Camera access requires HTTPS. Please:\n• Use HTTPS in production\n• Run with "npm run dev:https" for local development\n• Or access via localhost');
+        setIsInitializing(false);
+        return false;
+      }
+
+      // Check for getUserMedia support
+      const hasGetUserMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+      if (!hasGetUserMedia) {
+        setError('Camera API not supported in this browser. Please:\n• Update your browser to the latest version\n• Try Chrome, Firefox, Safari, or Edge\n• Check if camera is disabled in browser settings');
+        setIsInitializing(false);
+        return false;
+      }
+
+      return true;
+    };
+
+    if (checkBrowserSupport()) {
+      setIsInitializing(true);
+      setCameraReady(false);
+      setError(null);
+    }
+  }, []);
+
 
   // Error state
   if (error) {
@@ -118,6 +170,8 @@ export default function CameraPreview() {
           onClick={() => {
             setError(null);
             setIsInitializing(true);
+            setCameraReady(false);
+            setCameraKey(prev => prev + 1); // Force re-render of Camera component
           }}
           className="btn btn-primary"
         >
@@ -130,9 +184,29 @@ export default function CameraPreview() {
   // Loading state
   if (isInitializing) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 bg-base-200 rounded-2xl">
+      <div className="flex flex-col items-center justify-center h-96 bg-base-200 rounded-2xl p-8">
         <div className="loading loading-spinner loading-lg text-primary mb-4"></div>
-        <p className="text-base-content/70">Initializing camera...</p>
+        <p className="text-base-content/70 mb-4">Initializing camera...</p>
+        <div className="text-sm text-base-content/50 text-center max-w-sm">
+          <p>If the camera doesn't load:</p>
+          <ul className="list-disc list-inside mt-2 space-y-1 text-left">
+            <li>Make sure you allow camera permissions</li>
+            <li>Close other apps using the camera</li>
+            <li>Try refreshing the page</li>
+          </ul>
+        </div>
+        <button
+          onClick={() => {
+            console.log('Manual refresh triggered');
+            setIsInitializing(true);
+            setCameraReady(false);
+            setError(null);
+            setCameraKey(prev => prev + 1); // Force re-render of Camera component
+          }}
+          className="btn btn-outline btn-sm mt-4"
+        >
+          Refresh Camera
+        </button>
       </div>
     );
   }
@@ -146,11 +220,16 @@ export default function CameraPreview() {
             }`}
         >
           <Camera
+            key={cameraKey}
             ref={cameraRef}
             facingMode={facingMode}
             aspectRatio="cover"
             numberOfCamerasCallback={(numberOfCameras) => {
-              console.log('Number of cameras:', numberOfCameras);
+              console.log('Number of cameras detected:', numberOfCameras);
+              if (numberOfCameras === 0) {
+                setError('No cameras detected on this device.');
+                setIsInitializing(false);
+              }
             }}
             errorMessages={{
               noCameraAccessible: 'No camera device accessible. Please connect your camera or try a different browser.',
@@ -159,8 +238,9 @@ export default function CameraPreview() {
               canvas: 'Canvas is not supported.'
             }}
             videoReadyCallback={() => {
-              console.log('Camera video ready');
+              console.log('Camera video ready - camera initialized successfully');
               setIsInitializing(false);
+              setCameraReady(true);
               setError(null);
             }}
           />
