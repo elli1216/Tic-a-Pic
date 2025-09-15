@@ -142,7 +142,7 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
     try {
       const newSession = await createSession(nickname);
       set({ session: newSession });
-      localStorage.setItem('isTemporarySession', btoa(false.toString()));
+      localStorage.setItem('isTemporarySession', 'false');
     } catch (error) {
       console.error('Error creating session:', error);
       throw error;
@@ -154,7 +154,7 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
     try {
       const newSession = await createSessionOnLocalStorage();
       set({ session: newSession as PhotoSession });
-      localStorage.setItem('isTemporarySession', btoa(true.toString()));
+      localStorage.setItem('isTemporarySession', 'true');
     } catch (error) {
       console.error('Error creating session:', error);
       throw error;
@@ -169,7 +169,7 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
         throw new Error('Session not found');
       }
       set({ session: existingSession });
-      localStorage.setItem('isTemporarySession', btoa(false.toString()));
+      localStorage.setItem('isTemporarySession', 'false');
     } catch (error) {
       console.error('Error loading session:', error);
       throw error;

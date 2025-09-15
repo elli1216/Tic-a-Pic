@@ -15,7 +15,7 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
   const goToCamera = usePhotoboothStore((state) => state.goToCamera);
   const goToStrip = usePhotoboothStore((state) => state.goToStrip);
   const goToLayouts = usePhotoboothStore((state) => state.goToLayouts);
-  const isTemporarySession = JSON.parse(atob(localStorage.getItem('isTemporarySession') || 'false'));
+  const isTemporarySession = localStorage.getItem('isTemporarySession');
   console.log(isTemporarySession);
 
   // Handle copying session ID to clipboard
@@ -93,7 +93,7 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
                 </div>
                 <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 mt-1">
                   <li className="menu-title">
-                    <span>{`Current Session ${isTemporarySession === true ? '(Temporary)' : ''}`}</span>
+                    <span>{`Current Session ${isTemporarySession === 'true' ? '(Temporary)' : ''}`}</span>
                   </li>
                   <li>
                     <div className="flex items-center justify-between py-2">
