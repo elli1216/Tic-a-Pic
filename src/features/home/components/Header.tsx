@@ -15,7 +15,7 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
   const goToCamera = usePhotoboothStore((state) => state.goToCamera);
   const goToStrip = usePhotoboothStore((state) => state.goToStrip);
   const goToLayouts = usePhotoboothStore((state) => state.goToLayouts);
-  const isTemporarySession = JSON.parse(atob(localStorage.getItem('isTemporarySession') || false.toString()));
+  const isTemporarySession = JSON.parse(atob(localStorage.getItem('isTemporarySession') || 'false'));
   console.log(isTemporarySession);
 
   // Handle copying session ID to clipboard
