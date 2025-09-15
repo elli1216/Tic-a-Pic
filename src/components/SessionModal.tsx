@@ -58,7 +58,7 @@ export default function SessionModal() {
 
   const handleSkip = async () => {
     if (isCreating) return;
-    let confirmation = confirm('Are you sure you want to skip creating a session? This session will not be saved.');
+    const confirmation = confirm('Are you sure you want to skip creating a session? This session will not be saved.');
     if (!confirmation) return;
 
     setIsCreating(true);

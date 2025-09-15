@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save the user layout
-    const { data, error } = await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from('user_layouts')
       .insert({
         session_id,

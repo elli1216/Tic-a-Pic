@@ -23,9 +23,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const { nickname } = body;
 
-    // Get device info from request headers
-    const userAgent = request.headers.get('user-agent') || '';
-
     // Generate unique session ID
     let sessionId: string;
     let attempts = 0;

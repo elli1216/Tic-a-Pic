@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 import Webcam from 'react-webcam';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import { useCameraStore } from '@/features/common/store/useCameraStore';
@@ -131,7 +131,7 @@ export function useCameraController() {
     } finally {
       setIsInitializing(false);
     }
-  }, [facingMode, setFacingMode, setIsMirrored, setError]);
+  }, [facingMode, setFacingMode, setIsMirrored, setError, setIsInitializing]);
 
   // Toggle mirror/flip (only affects front cam visually)
   const toggleMirror = useCallback(() => {
