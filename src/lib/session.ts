@@ -92,6 +92,19 @@ export async function createSession(nickname?: string): Promise<PhotoSession> {
   }
 }
 
+export async function createSessionOnLocalStorage(): Promise<
+  Omit<PhotoSession, 'created_at' | 'updated_at'>
+> {
+  const session = {
+    session_id: generateSessionId().toUpperCase(),
+    nickname: undefined,
+    photos: [],
+    selectedLayout: null,
+  } as Omit<PhotoSession, 'created_at' | 'updated_at'>;
+  saveSessionLocally(session);
+  return session;
+}
+
 /**
  * Validate session exists using API endpoint
  */
@@ -161,11 +174,10 @@ export async function loadExistingSession(
 /**
  * Save session to localStorage (client-side cache)
  */
-function saveSessionLocally(session: PhotoSession): void {
+function saveSessionLocally(session: Omit<PhotoSession, 'created_at' | 'updated_at'>): void {
   if (typeof window === 'undefined') return;
 
   try {
-    session.updated_at = new Date().toISOString();
     localStorage.setItem(CURRENT_SESSION_KEY, JSON.stringify(session));
   } catch (error) {
     console.error('Error saving session locally:', error);

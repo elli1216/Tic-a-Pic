@@ -18,6 +18,7 @@ export default function SessionModal() {
   const showSessionModal = usePhotoboothStore((state) => state.showSessionModal);
   const setShowSessionModal = usePhotoboothStore((state) => state.setShowSessionModal);
   const createSession = usePhotoboothStore((state) => state.createSession);
+  const createSessionOnLocalStorage = usePhotoboothStore((state) => state.createSessionOnLocalStorage);
   const loadExistingSession = usePhotoboothStore((state) => state.loadExistingSession);
 
   const [isCreating, setIsCreating] = useState(false);
@@ -57,12 +58,14 @@ export default function SessionModal() {
 
   const handleSkip = async () => {
     if (isCreating) return;
+    let confirmation = confirm('Are you sure you want to skip creating a session? This session will not be saved.');
+    if (!confirmation) return;
 
     setIsCreating(true);
     try {
-      await createSession();
+      await createSessionOnLocalStorage();
       setShowSessionModal(false);
-      toast.success('Session created!');
+      toast.success('Temporary Session created!');
     } catch (error) {
       toast.error('Failed to create session!');
       console.error('Failed to create session:', error);

@@ -45,6 +45,7 @@ interface PhotoboothState {
   // Session management
   clearSession: () => void;
   createSession: (nickname?: string) => Promise<void>;
+  createSessionOnLocalStorage: (nickname?: string) => Promise<void>;
   loadExistingSession: (sessionId: string) => Promise<void>;
 }
 
@@ -141,6 +142,17 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
     try {
       const newSession = await createSession(nickname);
       set({ session: newSession });
+    } catch (error) {
+      console.error('Error creating session:', error);
+      throw error;
+    }
+  },
+
+  createSessionOnLocalStorage: async () => {
+    const { createSessionOnLocalStorage } = await import('@/lib/session');
+    try {
+      const newSession = await createSessionOnLocalStorage();
+      set({ session: newSession as PhotoSession });
     } catch (error) {
       console.error('Error creating session:', error);
       throw error;
