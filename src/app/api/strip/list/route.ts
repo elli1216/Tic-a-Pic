@@ -19,28 +19,37 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch photos for the session
-    const { data: photos, error } = await supabase
-      .from('user_photos')
-      .select('*')
+    // Fetch strips for the session, including layout information
+    const { data: strips, error } = await supabase
+      .from('user_strips')
+      .select(
+        `
+        *,
+        layouts:layout_id (
+          name,
+          type,
+          config_json,
+          thumbnail_url
+        )
+      `
+      )
       .eq('session_id', session_id)
       .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Database error:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch photos' },
+        { error: 'Failed to fetch strips' },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      photos: photos || []
+      strips: strips || [],
     });
-
   } catch (error) {
-    console.error('Error in photo list route:', error);
+    console.error('Error in strip list route:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

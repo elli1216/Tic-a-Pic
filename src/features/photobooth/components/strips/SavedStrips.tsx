@@ -5,13 +5,25 @@ import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import { toast } from 'react-hot-toast';
 import { Download, Trash2, Eye, Camera, RefreshCw, Calendar } from 'lucide-react';
 
-interface SavedPhoto {
-  id?: string;
+interface SavedStrip {
+  id: string;
   session_id: string;
-  photo_url?: string;
-  photo_data?: string; // base64 data
+  layout_id: string;
+  strip_image_url: string;
+  photo_urls: string[]; // JSONB array
+  metadata?: {
+    taken_at?: string;
+    photo_count?: number;
+    stickers?: any[];
+    filters?: any[];
+  };
   created_at: string;
-  storage_path?: string;
+  layouts?: {
+    name: string;
+    type: string;
+    config_json: string;
+    thumbnail_url?: string;
+  };
 }
 
 interface PhotoStrip {
@@ -19,6 +31,8 @@ interface PhotoStrip {
   photos: string[];
   created_at: string;
   session_id: string;
+  strip_image_url?: string;
+  layout_name?: string;
 }
 
 export default function SavedStrips() {
@@ -26,23 +40,24 @@ export default function SavedStrips() {
   const photos = usePhotoboothStore((state) => state.photos);
   const selectedLayout = usePhotoboothStore((state) => state.selectedLayout);
 
-  const [savedPhotos, setSavedPhotos] = useState<SavedPhoto[]>([]);
+  const [savedStrips, setSavedStrips] = useState<SavedStrip[]>([]);
   const [photoStrips, setPhotoStrips] = useState<PhotoStrip[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStrip, setSelectedStrip] = useState<PhotoStrip | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Fetch saved photos from API
+  // Fetch saved strips from API
   useEffect(() => {
-    const fetchSavedPhotos = async () => {
+    const fetchSavedStrips = async () => {
       if (!session?.session_id) {
-        // If no session, just show local photos
+        // If no session, just show local photos as a strip
         if (photos.length > 0) {
           const localStrip: PhotoStrip = {
             id: 'local',
             photos: photos,
             created_at: new Date().toISOString(),
-            session_id: 'local'
+            session_id: 'local',
+            layout_name: 'Current Session'
           };
           setPhotoStrips([localStrip]);
         }
@@ -51,28 +66,21 @@ export default function SavedStrips() {
       }
 
       try {
-        const response = await fetch(`/api/photo/list?session_id=${session.session_id}`);
+        const response = await fetch(`/api/strip/list?session_id=${session.session_id}`);
         const data = await response.json();
 
-        if (data.success && data.photos) {
-          setSavedPhotos(data.photos);
+        if (data.success && data.strips) {
+          setSavedStrips(data.strips);
 
-          // Group photos into strips (assuming 4 photos per strip)
-          const strips: PhotoStrip[] = [];
-          const photoUrls = data.photos.map((p: SavedPhoto) => p.photo_url || p.photo_data);
-
-          // Group every 4 photos into a strip
-          for (let i = 0; i < photoUrls.length; i += 4) {
-            const stripPhotos = photoUrls.slice(i, i + 4).filter(Boolean);
-            if (stripPhotos.length > 0) {
-              strips.push({
-                id: `strip-${Math.floor(i / 4)}`,
-                photos: stripPhotos,
-                created_at: data.photos[i]?.created_at || new Date().toISOString(),
-                session_id: session.session_id
-              });
-            }
-          }
+          // Convert saved strips to PhotoStrip format for display
+          const strips: PhotoStrip[] = data.strips.map((strip: SavedStrip) => ({
+            id: strip.id,
+            photos: strip.photo_urls,
+            created_at: strip.created_at,
+            session_id: strip.session_id,
+            strip_image_url: strip.strip_image_url,
+            layout_name: strip.layouts?.name || 'Unknown Layout'
+          }));
 
           // Add local photos if they exist and are different
           if (photos.length > 0) {
@@ -80,7 +88,8 @@ export default function SavedStrips() {
               id: 'local-current',
               photos: photos,
               created_at: new Date().toISOString(),
-              session_id: session.session_id
+              session_id: session.session_id,
+              layout_name: 'Current Session'
             };
             strips.unshift(localStrip); // Add to beginning
           }
@@ -88,8 +97,8 @@ export default function SavedStrips() {
           setPhotoStrips(strips);
         }
       } catch (error) {
-        console.error('Error fetching saved photos:', error);
-        toast.error('Failed to load saved photos');
+        console.error('Error fetching saved strips:', error);
+        toast.error('Failed to load saved strips');
 
         // Fallback to local photos
         if (photos.length > 0) {
@@ -97,7 +106,8 @@ export default function SavedStrips() {
             id: 'local-fallback',
             photos: photos,
             created_at: new Date().toISOString(),
-            session_id: session?.session_id || 'local'
+            session_id: session?.session_id || 'local',
+            layout_name: 'Current Session'
           };
           setPhotoStrips([localStrip]);
         }
@@ -106,7 +116,7 @@ export default function SavedStrips() {
       }
     };
 
-    fetchSavedPhotos();
+    fetchSavedStrips();
   }, [session, photos]);
 
   // Generate strip preview canvas
@@ -266,7 +276,7 @@ export default function SavedStrips() {
   const refreshData = () => {
     setLoading(true);
     // Trigger re-fetch by changing a dependency
-    setSavedPhotos([]);
+    setSavedStrips([]);
     setPhotoStrips([]);
   };
 

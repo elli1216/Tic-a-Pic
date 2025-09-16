@@ -131,7 +131,7 @@ export default function PhotoboothPage() {
   // Save strip to permanent photos
   const saveStrip = useCallback(async () => {
     try {
-      // Filter out null photos and save to main photos array
+      // Filter out null photos and validate
       const validPhotos = boothPhotos.filter(photo => photo !== null) as string[];
       if (validPhotos.length === 0) {
         toast.error('No photos to save!');
@@ -141,27 +141,47 @@ export default function PhotoboothPage() {
       // Save to store (this will persist to localStorage via existing logic)
       setPhotos(validPhotos);
 
-      // Save each photo to Supabase
-      for (const photo of validPhotos) {
-        try {
-          const response = await fetch('/api/photo/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              session_id: session?.session_id,
-              photo_data: photo
-            })
-          });
-
-          if (!response.ok) {
-            console.error('Failed to save photo to Supabase');
-          }
-        } catch (error) {
-          console.error('Error saving photo:', error);
-        }
+      // Generate the strip image from canvas
+      const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+      if (!canvas) {
+        toast.error('Could not generate strip image');
+        return;
       }
 
-      toast.success('Photo strip saved successfully! ✨');
+      const stripImageData = canvas.toDataURL('image/png');
+
+      // Save complete strip to Supabase
+      try {
+        const response = await fetch('/api/strip/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: session?.session_id,
+            layout_id: selectedLayout.id,
+            strip_image_data: stripImageData,
+            photo_urls: validPhotos,
+            metadata: {
+              taken_at: new Date().toISOString(),
+              photo_count: validPhotos.length
+            }
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save strip to server');
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Unknown error saving strip');
+        }
+
+        toast.success('Photo strip saved successfully! ✨');
+
+      } catch (error) {
+        console.error('Error saving strip to server:', error);
+        toast.error('Failed to save photo strip to server');
+      }
 
       // Optional: Reset booth photos after saving
       setTimeout(() => {
@@ -172,7 +192,7 @@ export default function PhotoboothPage() {
       console.error('Error saving strip:', error);
       toast.error('Failed to save photo strip');
     }
-  }, [boothPhotos, session, setPhotos, resetBoothPhotos]);
+  }, [boothPhotos, session, setPhotos, resetBoothPhotos, selectedLayout]);
 
   // Download strip as image
   const downloadStrip = useCallback(() => {
