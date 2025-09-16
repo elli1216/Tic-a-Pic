@@ -4,14 +4,14 @@ import { create } from 'zustand';
 import { LayoutConfig } from '@/components/PhotoStripCanvas';
 import { PhotoSession } from '@/lib/session';
 
-export type AppState = 'camera' | 'preview' | 'strip' | 'layouts';
+export type AppState = 'camera' | 'preview' | 'strip' | 'layouts' | 'booth';
 
 interface PhotoboothState {
   // App state
   appState: AppState;
   setAppState: (state: AppState) => void;
 
-  // Session
+  // Session (DO NOT CHANGE)
   session: PhotoSession | null;
   setSession: (session: PhotoSession | null) => void;
   showSessionModal: boolean;
@@ -27,6 +27,18 @@ interface PhotoboothState {
   currentPhoto: string | null;
   setCurrentPhoto: (photo: string | null) => void;
 
+  // NEW: Photobooth-specific state
+  currentSlot: 0 | 1 | 2 | 3;
+  setCurrentSlot: (slot: 0 | 1 | 2 | 3) => void;
+  isCapturing: boolean;
+  setIsCapturing: (isCapturing: boolean) => void;
+  countdown: number;
+  setCountdown: (countdown: number) => void;
+  boothPhotos: [string | null, string | null, string | null, string | null];
+  setBoothPhoto: (index: 0 | 1 | 2 | 3, photo: string | null) => void;
+  resetBoothPhotos: () => void;
+  startCaptureSession: () => void;
+  
   // Layout
   selectedLayout: LayoutConfig;
   setSelectedLayout: (layout: LayoutConfig) => void;
@@ -41,8 +53,9 @@ interface PhotoboothState {
   goToCamera: () => void;
   goToStrip: () => void;
   goToLayouts: () => void;
+  goToBooth: () => void;
 
-  // Session management
+  // Session management (DO NOT CHANGE)
   clearSession: () => void;
   createSession: (nickname?: string) => Promise<void>;
   createSessionOnLocalStorage: (nickname?: string) => Promise<void>;
@@ -51,11 +64,18 @@ interface PhotoboothState {
 
 export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
   // Initial state
-  appState: 'camera',
+  appState: 'layouts',  // Changed: default to layout selection
   session: null,
   showSessionModal: false,
   photos: [],
   currentPhoto: null,
+  
+  // NEW: Photobooth-specific initial state
+  currentSlot: 0,
+  isCapturing: false,
+  countdown: 0,
+  boothPhotos: [null, null, null, null],
+  
   selectedLayout: {
     id: 'classic-4',
     name: 'Classic Strip',
@@ -78,6 +98,19 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
   setCurrentPhoto: (currentPhoto) => set({ currentPhoto }),
   setSelectedLayout: (selectedLayout) => set({ selectedLayout }),
   setToast: (toast) => set({ toast }),
+  
+  // NEW: Photobooth-specific setters
+  setCurrentSlot: (currentSlot) => set({ currentSlot }),
+  setIsCapturing: (isCapturing) => set({ isCapturing }),
+  setCountdown: (countdown) => set({ countdown }),
+  setBoothPhoto: (index, photo) => {
+    const { boothPhotos } = get();
+    const newPhotos: [string | null, string | null, string | null, string | null] = [...boothPhotos];
+    newPhotos[index] = photo;
+    set({ boothPhotos: newPhotos });
+  },
+  resetBoothPhotos: () => set({ boothPhotos: [null, null, null, null], currentSlot: 0 }),
+  startCaptureSession: () => set({ isCapturing: true, currentSlot: 0 }),
 
   // Photo management
   addPhoto: (photo) => {
@@ -112,16 +145,22 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
   goToLayouts: () => {
     set({ appState: 'layouts' });
   },
+  goToBooth: () => set({ appState: 'booth' }),
 
-  // Session management
+  // Session management (DO NOT CHANGE)
   clearSession: () => {
     // Reset all state to initial values
     set({
       session: null,
       photos: [],
       currentPhoto: null,
-      appState: 'camera',
+      appState: 'layouts',  // Changed: default to layout selection
       showSessionModal: true,
+      // NEW: Reset booth photos
+      boothPhotos: [null, null, null, null],
+      currentSlot: 0,
+      isCapturing: false,
+      countdown: 0,
       selectedLayout: {
         id: 'classic-4',
         name: 'Classic Strip',

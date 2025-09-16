@@ -149,24 +149,19 @@ export default function LayoutGallery({ className = '' }: LayoutGalleryProps) {
   const setSelectedLayout = usePhotoboothStore((state) => state.setSelectedLayout);
   const photos = usePhotoboothStore((state) => state.photos);
   const setAppState = usePhotoboothStore((state) => state.setAppState);
+  const goToBooth = usePhotoboothStore((state) => state.goToBooth);
 
-  // Handle layout selection with validation
+  // Handle layout selection - redirect to booth for new unified flow
   const handleLayoutSelect = (layout: LayoutConfig) => {
-    // Check if user has photos first
-    if (photos.length === 0) {
-      toast.error('Please add some photos first before choosing a layout!');
-      return;
-    }
-
     // Save layout to store and localStorage
     setSelectedLayout(layout);
     saveLayout(layout);
 
     // Show success message
-    toast.success(`Layout "${layout.name}" selected successfully!`);
+    toast.success(`Layout "${layout.name}" selected! Let's take photos!`);
 
-    // Go back to strip view
-    setAppState('strip');
+    // Go to unified booth view
+    goToBooth();
   };
   return (
     <div className={`w-full ${className}`}>

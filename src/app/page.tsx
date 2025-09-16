@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import SessionModal from '@/components/SessionModal';
-import CameraView from '@/features/camera/components/CameraView';
-import PreviewView from '@/features/camera/components/PreviewView';
+// OLD: These components are replaced by the unified booth experience
+// import CameraView from '@/features/camera/components/CameraView';
+// import PreviewView from '@/features/camera/components/PreviewView';
 import StripView from '@/features/strip/components/StripView';
 import { Toaster } from 'react-hot-toast';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
@@ -18,7 +19,7 @@ import LayoutsView from '@/features/layouts/components/LayoutsView';
 import Header from '@/features/home/components/Header';
 import { toast } from 'react-hot-toast';
 import useThemeStore from '@/features/common/store/useThemeStore';
-import { CameraIcon, FilmIcon, LayoutIcon } from 'lucide-react';
+import { FilmIcon, LayoutIcon } from 'lucide-react';
 
 /**
  * Main photobooth application page
@@ -30,7 +31,6 @@ export default function Home(): React.JSX.Element {
   const setShowSessionModal = usePhotoboothStore((state) => state.setShowSessionModal);
   const setPhotos = usePhotoboothStore((state) => state.setPhotos);
   const setSelectedLayout = usePhotoboothStore((state) => state.setSelectedLayout);
-  const goToCamera = usePhotoboothStore((state) => state.goToCamera);
   const goToStrip = usePhotoboothStore((state) => state.goToStrip);
   const goToLayouts = usePhotoboothStore((state) => state.goToLayouts);
   const theme = useThemeStore((state) => state.theme);
@@ -139,51 +139,53 @@ export default function Home(): React.JSX.Element {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
         <div className="max-w-6xl mx-auto">
-          {/* Camera State */}
-          {appState === 'camera' && (
-            <div className="animate-fade-in">
-              <CameraView />
+          {/* Default/Layouts State - Show layout selection */}
+          {(appState === 'layouts' || appState === 'camera') && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="text-center mb-8">
+                <h1 className="text-4xl font-bold text-primary mb-2" style={{ fontFamily: 'var(--font-dancing-script)' }}>
+                  Welcome to Tic a Pic! 📸
+                </h1>
+                <p className="text-lg text-base-content/70">
+                  Choose a layout to start your photo booth experience
+                </p>
+              </div>
+              <LayoutsView />
             </div>
           )}
 
-          {/* Preview State */}
-          {appState === 'preview' && (
-            <div className="animate-fade-in">
-              <PreviewView />
-            </div>
-          )}
-
-          {/* Photo Strip State */}
+          {/* Photo Strip State - View/Edit existing photos */}
           {appState === 'strip' && (
             <div className="animate-fade-in">
               <StripView />
             </div>
           )}
 
-          {/* Layouts State */}
-          {appState === 'layouts' && (
-            <div className="space-y-6 animate-fade-in">
-              <LayoutsView />
+          {/* NEW: Booth State - Unified Photobooth Experience */}
+          {appState === 'booth' && (
+            <div className="animate-fade-in">
+              {/* Booth is now a separate page, redirect there */}
+              {typeof window !== 'undefined' && (window.location.href = '/booth')}
             </div>
           )}
         </div>
       </main>
 
-      {/* Bottom Navigation (Mobile) */}
+      {/* Bottom Navigation (Mobile) - Updated for new flow */}
       <nav className="fixed bottom-0 left-0 right-0 bg-base-100/95 backdrop-blur-lg border-t border-base-300 shadow-lg sm:hidden z-50">
         <div className="flex justify-around py-3 px-2">
           <button
-            onClick={goToCamera}
+            onClick={goToLayouts}
             className={`
               flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200
-              ${appState === 'camera'
+              ${(appState === 'layouts' || appState === 'camera')
                 ? 'bg-primary text-primary-content shadow-md'
                 : 'text-base-content/70 hover:text-primary hover:bg-primary/10'
               }
             `}
           >
-            <CameraIcon className="text-xl" />
-            <span className="text-xs font-medium">Camera</span>
+            <LayoutIcon className="text-xl" />
+            <span className="text-xs font-medium">Layouts</span>
           </button>
           <button
             onClick={goToStrip}
@@ -196,30 +198,17 @@ export default function Home(): React.JSX.Element {
               ${photos.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
             `}
             disabled={photos.length === 0}
-            title={photos.length === 0 ? 'Take some photos first' : 'View photo strip'}
+            title={photos.length === 0 ? 'Select a layout first' : 'View saved strips'}
           >
             <FilmIcon className="text-xl" />
             <span className="text-xs font-medium">
-              Strip
+              My Strips
               {photos.length > 0 && (
                 <span className="ml-1 bg-secondary text-secondary-content rounded-full px-1.5 py-0.5 text-[10px] font-bold">
                   {photos.length}
                 </span>
               )}
             </span>
-          </button>
-          <button
-            onClick={goToLayouts}
-            className={`
-              flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200
-              ${appState === 'layouts'
-                ? 'bg-primary text-primary-content shadow-md'
-                : 'text-base-content/70 hover:text-primary hover:bg-primary/10'
-              }
-            `}
-          >
-            <LayoutIcon className="text-xl" />
-            <span className="text-xs font-medium">Layouts</span>
           </button>
         </div>
       </nav>
