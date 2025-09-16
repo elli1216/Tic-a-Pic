@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutConfig } from '@/components/PhotoStripCanvas';
+import { LayoutConfig } from '@/features/photobooth/components/strips/PhotoStripCanvas';
 
 export interface PhotoSession {
   session_id: string;
@@ -15,6 +15,7 @@ export interface PhotoSession {
 const PHOTOS_STORAGE_KEY = 'tic-a-pic-photos';
 const LAYOUT_STORAGE_KEY = 'tic-a-pic-layout';
 const CURRENT_SESSION_KEY = 'tic-a-pic-current-session';
+const IS_TEMPORARY_SESSION_KEY = 'isTemporarySession';
 
 /**
  * Generate a random session ID in format XXXX-XXXX-XXXX
@@ -174,7 +175,9 @@ export async function loadExistingSession(
 /**
  * Save session to localStorage (client-side cache)
  */
-function saveSessionLocally(session: Omit<PhotoSession, 'created_at' | 'updated_at'>): void {
+function saveSessionLocally(
+  session: Omit<PhotoSession, 'created_at' | 'updated_at'>
+): void {
   if (typeof window === 'undefined') return;
 
   try {
@@ -291,6 +294,7 @@ export function clearSession(): void {
     localStorage.removeItem(CURRENT_SESSION_KEY);
     localStorage.removeItem(PHOTOS_STORAGE_KEY);
     localStorage.removeItem(LAYOUT_STORAGE_KEY);
+    localStorage.removeItem(IS_TEMPORARY_SESSION_KEY);
   } catch (error) {
     console.error('Error clearing session:', error);
   }

@@ -78,18 +78,32 @@ export default function SessionModal() {
   const onLoadSubmit = async (data: LoadSessionForm) => {
     if (isLoading || !data.sessionId.trim()) return;
 
+    const sessionId = data.sessionId.trim().toUpperCase();
+
+    // Basic validation
+    if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(sessionId)) {
+      toast.error('Invalid session ID format');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await loadExistingSession(data.sessionId.trim().toUpperCase());
+      await loadExistingSession(sessionId);
       setShowSessionModal(false);
-      toast.success('Session loaded successfully!');
+      toast.success('Session loaded successfully! 🎉');
       // Reset form and mode
       loadForm.reset();
       setMode('create');
     } catch (error) {
-      toast.error('Failed to load session!');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('Session not found')) {
+        toast.error('Session not found. Please check your session ID and try again.');
+      } else if (errorMessage.includes('expired')) {
+        toast.error('This session has expired. Please create a new session.');
+      } else {
+        toast.error('Failed to load session. Please try again.');
+      }
       console.error('Failed to load session:', error);
-      // Error handling is done in store
     } finally {
       setIsLoading(false);
     }

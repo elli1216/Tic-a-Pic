@@ -2,17 +2,15 @@ import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import React from 'react';
 import ThemeToggle from '@/features/common/components/ThemeToggle';
 import { toast } from 'react-hot-toast';
-import { UserIcon, TrashIcon, CopyIcon, Camera, Images, LayoutIcon, FilmIcon } from 'lucide-react';
+import { UserIcon, TrashIcon, CopyIcon, Camera, Images} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { clearSession } from '@/lib/session';
 
-interface HeaderProps {
-  onClearSession?: () => void;
-}
-
-export default function Header({ onClearSession }: HeaderProps): React.JSX.Element {
+export default function Header(): React.JSX.Element {
   const photos = usePhotoboothStore((state) => state.photos);
   const session = usePhotoboothStore((state) => state.session);
+  const setSession = usePhotoboothStore((state) => state.setSession);
   const pathname = usePathname();
   const isTemporarySession = localStorage.getItem('isTemporarySession');
   console.log(isTemporarySession);
@@ -149,16 +147,17 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
                     </div>
                   </li>
                   <div className="divider my-1"></div>
-                  {onClearSession && (
-                    <li>
-                      <button
-                        onClick={onClearSession}
-                        className="text-error hover:bg-error/20 hover:text-error-content"
-                      >
-                        <TrashIcon size={16} /> Clear Session
-                      </button>
-                    </li>
-                  )}
+                  <li>
+                    <button
+                      onClick={() => {
+                        clearSession();
+                        setSession(null);
+                      }}
+                      className="text-error hover:bg-error/20 hover:text-error-content cursor-pointer"
+                    >
+                      <TrashIcon size={16} /> Clear Session
+                    </button>
+                  </li>
                 </ul>
               </div>
             )}

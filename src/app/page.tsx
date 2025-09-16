@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef, useCallback, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Webcam from 'react-webcam';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import { toast } from 'react-hot-toast';
@@ -15,7 +14,6 @@ import {
 } from '@/features/photobooth/components';
 
 export default function PhotoboothPage() {
-  const router = useRouter();
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -38,14 +36,6 @@ export default function PhotoboothPage() {
   // Local state
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
   const [allPhotosComplete, setAllPhotosComplete] = useState(false);
-
-  // Check if session exists, redirect if not
-  useEffect(() => {
-    if (!session) {
-      toast.error('Please start a session first!');
-      router.push('/');
-    }
-  }, [session, router]);
 
   // Cleanup on unmount
   useEffect(() => {

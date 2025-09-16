@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { LayoutConfig } from '@/components/PhotoStripCanvas';
+import { LayoutConfig } from '@/features/photobooth/components/strips/PhotoStripCanvas';
 import { PhotoSession } from '@/lib/session';
 
 export type AppState = 'camera' | 'preview' | 'strip' | 'layouts' | 'booth';
@@ -38,7 +38,7 @@ interface PhotoboothState {
   setBoothPhoto: (index: 0 | 1 | 2 | 3, photo: string | null) => void;
   resetBoothPhotos: () => void;
   startCaptureSession: () => void;
-  
+
   // Layout
   selectedLayout: LayoutConfig;
   setSelectedLayout: (layout: LayoutConfig) => void;
@@ -69,13 +69,13 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
   showSessionModal: false,
   photos: [],
   currentPhoto: null,
-  
+
   // NEW: Photobooth-specific initial state
   currentSlot: 0,
   isCapturing: false,
   countdown: 0,
   boothPhotos: [null, null, null, null],
-  
+
   selectedLayout: {
     id: 'classic-4',
     name: 'Classic Strip',
@@ -98,18 +98,24 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
   setCurrentPhoto: (currentPhoto) => set({ currentPhoto }),
   setSelectedLayout: (selectedLayout) => set({ selectedLayout }),
   setToast: (toast) => set({ toast }),
-  
+
   // NEW: Photobooth-specific setters
   setCurrentSlot: (currentSlot) => set({ currentSlot }),
   setIsCapturing: (isCapturing) => set({ isCapturing }),
   setCountdown: (countdown) => set({ countdown }),
   setBoothPhoto: (index, photo) => {
     const { boothPhotos } = get();
-    const newPhotos: [string | null, string | null, string | null, string | null] = [...boothPhotos];
+    const newPhotos: [
+      string | null,
+      string | null,
+      string | null,
+      string | null
+    ] = [...boothPhotos];
     newPhotos[index] = photo;
     set({ boothPhotos: newPhotos });
   },
-  resetBoothPhotos: () => set({ boothPhotos: [null, null, null, null], currentSlot: 0 }),
+  resetBoothPhotos: () =>
+    set({ boothPhotos: [null, null, null, null], currentSlot: 0 }),
   startCaptureSession: () => set({ isCapturing: true, currentSlot: 0 }),
 
   // Photo management

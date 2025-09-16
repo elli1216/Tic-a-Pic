@@ -4,7 +4,10 @@ import React from 'react';
 import { Dancing_Script } from 'next/font/google';
 import "@/styles/globals.css";
 import Header from '@/features/home/components/Header';
+import SessionModal from '@/features/photobooth/components/modal/SessionModal';
+import SessionInitializer from '@/features/photobooth/components/session/SessionInitializer';
 import { Toaster } from 'react-hot-toast';
+import useThemeStore from '@/features/common/store/useThemeStore';
 
 // Configure the Dancing Script font
 const dancingScript = Dancing_Script({
@@ -23,8 +26,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }): React.JSX.Element {
+  const theme = useThemeStore((state) => state.theme);
+
   return (
-    <html lang="en" data-theme="nord" className={dancingScript.variable}>
+    <html lang="en" data-theme={theme} className={dancingScript.variable}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
         <meta name="description" content="Take instant photos and create beautiful photo strips with Tic a Pic - no login required!" />
@@ -33,17 +38,19 @@ export default function RootLayout({
         <title>Tic a Pic - Instant Photobooth</title>
       </head>
       <body className={`min-h-screen bg-base-100 text-base-content ${dancingScript.variable}`}>
+        <SessionInitializer />
         <Header />
         <main className="pt-0">
           {children}
         </main>
+        <SessionModal />
         <Toaster
-          position="top-center"
+          position="top-left"
           toastOptions={{
             duration: 3000,
             style: {
-              background: 'var(--fallback-b1,oklch(var(--b1)))',
-              color: 'var(--fallback-bc,oklch(var(--bc)))',
+              background: `${theme} bg-base-100`,
+              color: `${theme} text-base-content`,
             },
           }}
         />

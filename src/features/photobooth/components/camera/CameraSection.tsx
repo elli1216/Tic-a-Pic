@@ -1,7 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { RotateCcw, Save, Download, Sparkles } from 'lucide-react';
-import CameraErrorFallback from './error/CameraErrorFallback';
+import CameraErrorFallback from '../error/CameraErrorFallback';
 
 interface CameraSectionProps {
   facingMode: 'user' | 'environment';
