@@ -1,6 +1,10 @@
+'use client';
+
 import React from 'react';
 import { Dancing_Script } from 'next/font/google';
 import "@/styles/globals.css";
+import Header from '@/features/home/components/Header';
+import { Toaster } from 'react-hot-toast';
 
 // Configure the Dancing Script font
 const dancingScript = Dancing_Script({
@@ -12,7 +16,7 @@ const dancingScript = Dancing_Script({
 
 /**
  * Root layout component for the application.
- * Imports global styles and provides the base HTML structure.
+ * Imports global styles and provides the base HTML structure with header.
  */
 export default function RootLayout({
   children,
@@ -29,7 +33,20 @@ export default function RootLayout({
         <title>Tic a Pic - Instant Photobooth</title>
       </head>
       <body className={`min-h-screen bg-base-100 text-base-content ${dancingScript.variable}`}>
-        {children}
+        <Header />
+        <main className="pt-0">
+          {children}
+        </main>
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: 'var(--fallback-b1,oklch(var(--b1)))',
+              color: 'var(--fallback-bc,oklch(var(--bc)))',
+            },
+          }}
+        />
       </body>
     </html>
   )

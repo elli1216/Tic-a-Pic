@@ -2,19 +2,18 @@ import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import React from 'react';
 import ThemeToggle from '@/features/common/components/ThemeToggle';
 import { toast } from 'react-hot-toast';
-import { CameraIcon, FilmIcon, LayoutIcon, UserIcon, TrashIcon, CopyIcon } from 'lucide-react';
+import { UserIcon, TrashIcon, CopyIcon, Camera, Images, LayoutIcon, FilmIcon } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface HeaderProps {
   onClearSession?: () => void;
 }
 
 export default function Header({ onClearSession }: HeaderProps): React.JSX.Element {
-  const appState = usePhotoboothStore((state) => state.appState);
   const photos = usePhotoboothStore((state) => state.photos);
   const session = usePhotoboothStore((state) => state.session);
-  const goToCamera = usePhotoboothStore((state) => state.goToCamera);
-  const goToStrip = usePhotoboothStore((state) => state.goToStrip);
-  const goToLayouts = usePhotoboothStore((state) => state.goToLayouts);
+  const pathname = usePathname();
   const isTemporarySession = localStorage.getItem('isTemporarySession');
   console.log(isTemporarySession);
 
@@ -49,34 +48,62 @@ export default function Header({ onClearSession }: HeaderProps): React.JSX.Eleme
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text">
+            <Link href="/" className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text hover:opacity-80 transition-opacity">
               Tic a Pic
-            </h1>
+            </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden sm:flex items-center gap-4">
-            <button
-              onClick={goToCamera}
-              className={`btn btn-ghost btn-sm ${appState === 'camera' ? 'btn-active' : ''}`}
+          {/* Navigation */}
+          <nav className="hidden sm:flex items-center gap-2">
+            <Link
+              href="/"
+              className={`btn btn-ghost btn-sm gap-2 ${pathname === '/' ? 'btn-active' : ''}`}
             >
-              <CameraIcon size={16} /> Camera
-            </button>
-            <button
-              onClick={goToStrip}
-              className={`btn btn-ghost btn-sm ${appState === 'strip' ? 'btn-active' : ''} ${photos.length === 0 ? 'btn-disabled opacity-50' : ''}`}
-              disabled={photos.length === 0}
-              title={photos.length === 0 ? 'Take some photos first' : 'View photo strip'}
+              <Camera size={16} />
+              Photo Booth
+            </Link>
+
+            <Link
+              href="/saved-strips"
+              className={`btn btn-ghost btn-sm gap-2 ${pathname === '/saved-strips' ? 'btn-active' : ''} ${photos.length === 0 && !session ? 'btn-disabled opacity-50' : ''}`}
+              title={photos.length === 0 && !session ? 'Take some photos first' : 'View saved strips'}
             >
-              <FilmIcon size={16} /> Strip {photos.length > 0 && `(${photos.length})`}
-            </button>
-            <button
-              onClick={goToLayouts}
-              className={`btn btn-ghost btn-sm ${appState === 'layouts' ? 'btn-active' : ''}`}
-            >
-              <LayoutIcon size={16} /> Layouts
-            </button>
+              <Images size={16} />
+              Saved Strips
+              {photos.length > 0 && (
+                <span className="badge badge-primary badge-sm">{photos.length}</span>
+              )}
+            </Link>
           </nav>
+
+          {/* Mobile Navigation */}
+          <div className="sm:hidden dropdown dropdown-end">
+            <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </div>
+            <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 mt-1">
+              <li>
+                <Link href="/" className={pathname === '/' ? 'active' : ''}>
+                  <Camera size={16} />
+                  Photo Booth
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/saved-strips"
+                  className={pathname === '/saved-strips' ? 'active' : ''}
+                >
+                  <Images size={16} />
+                  Saved Strips
+                  {photos.length > 0 && (
+                    <span className="badge badge-primary badge-sm">{photos.length}</span>
+                  )}
+                </Link>
+              </li>
+            </ul>
+          </div>
 
           {/* Session info & Stats */}
           <div className="flex items-center justify-center gap-4">
