@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     const filename = `${session_id}/strip-${timestamp}.png`;
 
     // Upload strip image to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('strips')
       .upload(filename, buffer, {
         contentType: 'image/png',

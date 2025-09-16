@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import { toast } from 'react-hot-toast';
-import { Download, Trash2, Eye, Camera, RefreshCw, Calendar } from 'lucide-react';
+import { Download, Eye, Camera, RefreshCw, Calendar } from 'lucide-react';
 
 interface SavedStrip {
   id: string;
@@ -30,7 +30,7 @@ interface PhotoStrip {
   id: string;
   photos: string[];
   created_at: string;
-  session_id: string;
+  session_id: string | undefined;
   strip_image_url?: string;
   layout_name?: string;
 }
@@ -45,11 +45,12 @@ export default function SavedStrips() {
   const [loading, setLoading] = useState(true);
   const [selectedStrip, setSelectedStrip] = useState<PhotoStrip | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isTemporarySession = localStorage.getItem('isTemporarySession');
 
   // Fetch saved strips from API
   useEffect(() => {
     const fetchSavedStrips = async () => {
-      if (!session?.session_id) {
+      if (!session?.session_id && isTemporarySession === 'true') {
         // If no session, just show local photos as a strip
         if (photos.length > 0) {
           const localStrip: PhotoStrip = {
@@ -66,7 +67,7 @@ export default function SavedStrips() {
       }
 
       try {
-        const response = await fetch(`/api/strip/list?session_id=${session.session_id}`);
+        const response = await fetch(`/api/strip/list?session_id=${session?.session_id}`);
         const data = await response.json();
 
         if (data.success && data.strips) {
@@ -88,7 +89,7 @@ export default function SavedStrips() {
               id: 'local-current',
               photos: photos,
               created_at: new Date().toISOString(),
-              session_id: session.session_id,
+              session_id: session?.session_id,
               layout_name: 'Current Session'
             };
             strips.unshift(localStrip); // Add to beginning
