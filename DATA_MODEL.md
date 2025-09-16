@@ -24,14 +24,22 @@
 - `config_json` (text)
 - `created_at` (timestamptz)
 
-## Table: `user_photos`
+## 🆕 Table: `user_strips`
 
 - `id` (uuid, primary)
 - `session_id` (text) → references `sessions(session_id)` ON DELETE CASCADE
-- `photo_url` (text) → Supabase Storage path (e.g., `/user-photos/PHX9-M2LQ-7TZR/photo1.png`)
-- `order_index` (integer) → position in strip (0–3)
-- `metadata` (jsonb, optional) → { filters, stickers applied }
+- `layout_id` (uuid) → references `layouts(id)` — which layout was used
+- `strip_image_url` (text) → Supabase Storage path (e.g., `/strips/PHX9-M2LQ-7TZR/strip-20250405.png`)
+- `photo_urls` (jsonb) → array of 4 photo URLs used in strip: `["url1", "url2", "url3", "url4"]`
+- `metadata` (jsonb, optional) → { stickers: [], filters: [], taken_at: "ISO string" }
 - `created_at` (timestamptz)
+
+> 💡 Why this is better:
+>
+> - One record = one strip (matches user intent)
+> - Easy to display in gallery later
+> - Can regenerate/edit if needed (via `photo_urls` + `layout_id`)
+> - `strip_image_url` = final rendered image (for download/share)
 
 ## Table: `premium_codes`
 
