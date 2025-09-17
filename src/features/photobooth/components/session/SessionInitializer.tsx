@@ -42,7 +42,7 @@ export default function SessionInitializer() {
                 await loadExistingSession(sessionData.session_id);
                 console.log('Validated and restored session from server');
               } catch (error) {
-                console.log('Session validation failed, clearing stored session');
+                console.log('Session validation failed, clearing stored session', error);
                 // Session no longer valid, clear it
                 await clearSession();
                 setShowSessionModal(true);
