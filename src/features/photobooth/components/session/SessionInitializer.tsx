@@ -25,7 +25,7 @@ export default function SessionInitializer() {
       try {
         // Check localStorage for existing session data
         const savedSessionData = getCurrentSession();
-        const isTemporarySession = localStorage.getItem('isTemporarySession');
+        const isTemporarySession = typeof window !== 'undefined' ? localStorage.getItem('isTemporarySession') : null;
 
         if (savedSessionData) {
           try {
