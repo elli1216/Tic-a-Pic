@@ -128,3 +128,36 @@ export interface DiagnosticsData {
   };
   lastUpdated: Date;
 }
+
+interface Stickers {
+  id: string;
+  name: string;
+  image_url: string;
+}
+
+interface Filters {
+  id: string;
+  name: string;
+  image_url: string;
+}
+
+export interface SavedStrip {
+  id: string;
+  session_id: string;
+  layout_id: string;
+  strip_image_url: string;
+  photo_urls: string[]; // JSONB array
+  metadata?: {
+    taken_at?: string;
+    photo_count?: number;
+    stickers?: Stickers[];
+    filters?: Filters[];
+  };
+  created_at: string;
+  layouts?: {
+    name: string;
+    type: string;
+    config_json: string;
+    thumbnail_url?: string;
+  };
+}

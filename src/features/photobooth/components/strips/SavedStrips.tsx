@@ -3,28 +3,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
 import { toast } from 'react-hot-toast';
-import { Download, Eye, Camera, RefreshCw, Calendar } from 'lucide-react';
-
-interface SavedStrip {
-  id: string;
-  session_id: string;
-  layout_id: string;
-  strip_image_url: string;
-  photo_urls: string[]; // JSONB array
-  metadata?: {
-    taken_at?: string;
-    photo_count?: number;
-    stickers?: any[];
-    filters?: any[];
-  };
-  created_at: string;
-  layouts?: {
-    name: string;
-    type: string;
-    config_json: string;
-    thumbnail_url?: string;
-  };
-}
+import { Download, Eye, Camera, RefreshCw, Calendar, Link } from 'lucide-react';
+import Image from 'next/image';
+import { SavedStrip } from '@/shared/types/TYPES';
 
 interface PhotoStrip {
   id: string;
@@ -45,12 +26,15 @@ export default function SavedStrips() {
   const [loading, setLoading] = useState(true);
   const [selectedStrip, setSelectedStrip] = useState<PhotoStrip | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isTemporarySession = localStorage.getItem('isTemporarySession');
+  const isTemporarySession = typeof window !== 'undefined'
+    ? localStorage.getItem('isTemporarySession')
+    : null;
+  console.log(savedStrips);
 
   // Fetch saved strips from API
   useEffect(() => {
     const fetchSavedStrips = async () => {
-      if (!session?.session_id && isTemporarySession === 'true') {
+      if (!session?.session_id && isTemporarySession) {
         // If no session, just show local photos as a strip
         if (photos.length > 0) {
           const localStrip: PhotoStrip = {
@@ -118,7 +102,7 @@ export default function SavedStrips() {
     };
 
     fetchSavedStrips();
-  }, [session, photos]);
+  }, [session, photos, isTemporarySession]);
 
   // Generate strip preview canvas
   const generateStripCanvas = (strip: PhotoStrip): Promise<HTMLCanvasElement> => {
@@ -160,7 +144,7 @@ export default function SavedStrips() {
         const slotWidth = (slot.width / 100) * stripWidth;
         const slotHeight = (slot.height / 100) * stripHeight;
 
-        const img = new Image();
+        const img = new window.Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
           ctx.save();
@@ -334,10 +318,10 @@ export default function SavedStrips() {
             <p className="text-base-content/50 mb-6">
               Start taking photos to create your first photo strip!
             </p>
-            <a href="/" className="btn btn-primary gap-2">
+            <Link to="/" className="btn btn-primary gap-2">
               <Camera size={16} />
               Take Photos
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -349,7 +333,9 @@ export default function SavedStrips() {
                     <div className="grid grid-cols-1 gap-1 h-full">
                       {strip.photos.slice(0, 4).map((photo, index) => (
                         <div key={index} className="bg-base-300 relative overflow-hidden">
-                          <img
+                          <Image
+                            width={100}
+                            height={100}
                             src={photo}
                             alt={`Photo ${index + 1}`}
                             className="w-full h-full object-cover"
