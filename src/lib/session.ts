@@ -295,6 +295,7 @@ export function clearSession(): void {
     localStorage.removeItem(PHOTOS_STORAGE_KEY);
     localStorage.removeItem(LAYOUT_STORAGE_KEY);
     localStorage.removeItem(IS_TEMPORARY_SESSION_KEY);
+    localStorage.removeItem('tic-a-pic-local-strips'); // Clear local strips too
   } catch (error) {
     console.error('Error clearing session:', error);
   }

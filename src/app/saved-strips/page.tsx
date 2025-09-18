@@ -7,20 +7,67 @@ import { Download, Eye, Camera, RefreshCw, Calendar } from 'lucide-react';
 import Image from 'next/image';
 import { SavedStrip } from '@/shared/types/TYPES';
 import { useRouter } from 'next/navigation';
+import { formatDate } from '@/features/photobooth/utils/formatDate.util';
 import { useSuspenseQuery } from '@tanstack/react-query';
+
+// Helper function to get strips from localStorage
+const getLocalStrips = (): SavedStrip[] => {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const localStrips = localStorage.getItem('tic-a-pic-local-strips');
+    return localStrips ? JSON.parse(localStrips) : [];
+  } catch (error) {
+    console.error('Error loading local strips:', error);
+    return [];
+  }
+};
+
+// Helper function to save strips to localStorage
+export const saveLocalStrips = (strips: SavedStrip[]): void => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    localStorage.setItem('tic-a-pic-local-strips', JSON.stringify(strips));
+  } catch (error) {
+    console.error('Error saving local strips:', error);
+  }
+};
+
+// Helper function to clear local strips
+export const clearLocalStrips = (): void => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    localStorage.removeItem('tic-a-pic-local-strips');
+  } catch (error) {
+    console.error('Error clearing local strips:', error);
+  }
+};
 
 export default function SavedStrips() {
   const session = usePhotoboothStore((state) => state.session);
   const router = useRouter();
   const selectedStrip = usePhotoboothStore((state) => state.selectedStrip);
   const setSelectedStrip = usePhotoboothStore((state) => state.setSelectedStrip);
+  const isTemporarySession = typeof window !== 'undefined' ? localStorage.getItem('isTemporarySession') === 'true' : false;
 
   const query = useSuspenseQuery<SavedStrip[]>({
-    queryKey: ['saved-strips', session?.session_id],
+    queryKey: ['saved-strips', session?.session_id, isTemporarySession],
     queryFn: async () => {
-      const response = await fetch(`/api/strip/list?session_id=${session?.session_id}`);
+      // If it's a temporary session, get strips from localStorage
+      if (isTemporarySession) {
+        return getLocalStrips();
+      }
+
+      // Otherwise, fetch from database
+      if (!session?.session_id) {
+        return [];
+      }
+
+      const response = await fetch(`/api/strip/list?session_id=${session.session_id}`);
       const data = await response.json();
-      return data.strips;
+      return data.strips || [];
     },
   });
 
@@ -48,17 +95,6 @@ export default function SavedStrips() {
     setSelectedStrip(strip);
   };
 
-  // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   const handleBackToCamera = () => {
     router.push('/');
   };
@@ -73,17 +109,22 @@ export default function SavedStrips() {
               <Camera className="text-primary" />
               Saved Photo Strips
             </h1>
-            <p className="text-base-content/60 mt-1">
+            <div className="text-base-content/60 mt-1">
               {query.data.length > 0
                 ? `${query.data.length} strip${query.data.length !== 1 ? 's' : ''} saved`
                 : 'No strips saved yet'
               }
-            </p>
+              {isTemporarySession && (
+                <span className="ml-2 badge badge-warning badge-sm">
+                  Local Session
+                </span>
+              )}
+            </div>
           </div>
 
           <button
             onClick={() => query.refetch()}
-            className="btn btn-ghost btn-sm gap-2"
+            className={`btn btn-ghost btn-sm gap-2 ${isTemporarySession ? 'hidden' : ''}`}
             disabled={query.isFetching}
           >
             <RefreshCw size={16} className={query.isFetching ? 'animate-spin' : ''} />
