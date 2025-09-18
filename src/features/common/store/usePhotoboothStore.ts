@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { LayoutConfig } from '@/features/photobooth/components/strips/PhotoStripCanvas';
 import { PhotoSession } from '@/lib/session';
+import { SavedStrip } from '@/shared/types/TYPES';
 
 export type AppState = 'camera' | 'preview' | 'strip' | 'layouts' | 'booth';
 
@@ -26,6 +27,12 @@ interface PhotoboothState {
   replacePhoto: (index: number, photo: string) => void;
   currentPhoto: string | null;
   setCurrentPhoto: (photo: string | null) => void;
+
+  // Strips
+  strips: SavedStrip[];
+  setStrips: (strips: SavedStrip[]) => void;
+  selectedStrip: SavedStrip | null;
+  setSelectedStrip: (strip: SavedStrip | null) => void;
 
   // NEW: Photobooth-specific state
   currentSlot: 0 | 1 | 2 | 3;
@@ -64,11 +71,13 @@ interface PhotoboothState {
 
 export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
   // Initial state
-  appState: 'layouts',  // Changed: default to layout selection
+  appState: 'layouts', // Changed: default to layout selection
   session: null,
   showSessionModal: false,
   photos: [],
   currentPhoto: null,
+  strips: [],
+  selectedStrip: null,
 
   // NEW: Photobooth-specific initial state
   currentSlot: 0,
@@ -145,6 +154,9 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
     set({ photos: updatedPhotos });
   },
 
+  setStrips: (strips) => set({ strips }),
+  setSelectedStrip: (selectedStrip) => set({ selectedStrip }),
+
   // Navigation helpers
   goToCamera: () => set({ appState: 'camera' }),
   goToStrip: () => set({ appState: 'strip' }),
@@ -159,8 +171,10 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
     set({
       session: null,
       photos: [],
+      strips: [],
+      selectedStrip: null,
       currentPhoto: null,
-      appState: 'layouts',  // Changed: default to layout selection
+      appState: 'layouts', // Changed: default to layout selection
       showSessionModal: true,
       // NEW: Reset booth photos
       boothPhotos: [null, null, null, null],

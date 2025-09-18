@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 import { clearSession } from '@/lib/session';
 
 export default function Header(): React.JSX.Element {
-  const photos = usePhotoboothStore((state) => state.photos);
+  const strips = usePhotoboothStore((state) => state.strips);
   const session = usePhotoboothStore((state) => state.session);
   const setSession = usePhotoboothStore((state) => state.setSession);
   const pathname = usePathname();
@@ -63,13 +63,13 @@ export default function Header(): React.JSX.Element {
 
             <Link
               href="/saved-strips"
-              className={`btn btn-ghost btn-sm gap-2 ${pathname === '/saved-strips' ? 'btn-active' : ''} ${photos.length === 0 && !session ? 'btn-disabled opacity-50' : ''}`}
-              title={photos.length === 0 && !session ? 'Take some photos first' : 'View saved strips'}
+              className={`btn btn-ghost btn-sm gap-2 ${pathname === '/saved-strips' ? 'btn-active' : ''} ${strips.length === 0 && !session ? 'btn-disabled opacity-50' : ''}`}
+              title={strips.length === 0 && !session ? 'Take some photos first' : 'View saved strips'}
             >
               <Images size={16} />
               Saved Strips
-              {photos.length > 0 && (
-                <span className="badge badge-primary badge-sm">{photos.length}</span>
+              {strips.length > 0 && (
+                <span className="badge badge-primary badge-sm">{strips.length}</span>
               )}
             </Link>
           </nav>
@@ -95,8 +95,8 @@ export default function Header(): React.JSX.Element {
                 >
                   <Images size={16} />
                   Saved Strips
-                  {photos.length > 0 && (
-                    <span className="badge badge-primary badge-sm">{photos.length}</span>
+                  {strips.length > 0 && (
+                    <span className="badge badge-primary badge-sm">{strips.length}</span>
                   )}
                 </Link>
               </li>
@@ -143,7 +143,7 @@ export default function Header(): React.JSX.Element {
                   <li>
                     <div className="flex items-center justify-between py-2">
                       <span className="text-xs">Photos:</span>
-                      <span className="badge badge-ghost badge-sm">{photos.length}</span>
+                      <span className="badge badge-ghost badge-sm">{strips.length}</span>
                     </div>
                   </li>
                   <div className="divider my-1"></div>
@@ -166,7 +166,7 @@ export default function Header(): React.JSX.Element {
             {!session && (
               <div className="flex items-center justify-center gap-2 text-sm">
                 <span className="badge badge-ghost badge-sm">
-                  {photos.length} photos
+                  {strips.length} photos
                 </span>
               </div>
             )}
