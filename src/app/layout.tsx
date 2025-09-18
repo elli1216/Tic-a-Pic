@@ -44,16 +44,25 @@ export default function RootLayout({
           {children}
         </main>
         <SessionModal />
-        <Toaster
-          position="top-left"
-          toastOptions={{
-            duration: 3000,
-            style: {
-              background: `${theme} bg-base-100`,
-              color: `${theme} text-base-content`,
-            },
-          }}
-        />
+        {theme === `nord` ? (
+          <Toaster
+            position="top-left"
+            toastOptions={{
+              duration: 3000,
+            }}
+          />
+        ) : (
+          <Toaster
+            position="top-left"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: `#333333`,
+                color: `#ffffff`,
+              },
+            }}
+          />
+        )}
       </body>
     </html>
   )

@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { Download, Eye, Camera, RefreshCw, Calendar, Link } from 'lucide-react';
 import Image from 'next/image';
 import { SavedStrip } from '@/shared/types/TYPES';
+import { useRouter } from 'next/navigation';
 
 interface PhotoStrip {
   id: string;
@@ -20,7 +21,7 @@ export default function SavedStrips() {
   const session = usePhotoboothStore((state) => state.session);
   const photos = usePhotoboothStore((state) => state.photos);
   const selectedLayout = usePhotoboothStore((state) => state.selectedLayout);
-
+  const router = useRouter();
   const [savedStrips, setSavedStrips] = useState<SavedStrip[]>([]);
   const [photoStrips, setPhotoStrips] = useState<PhotoStrip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -257,6 +258,10 @@ export default function SavedStrips() {
     });
   };
 
+  const handleBackToCamera = () => {
+    router.push('/');
+  };
+
   // Refresh data
   const refreshData = () => {
     setLoading(true);
@@ -318,10 +323,13 @@ export default function SavedStrips() {
             <p className="text-base-content/50 mb-6">
               Start taking photos to create your first photo strip!
             </p>
-            <Link to="/" className="btn btn-primary gap-2">
+            <button
+              onClick={handleBackToCamera}
+              className="btn btn-primary gap-2"
+            >
               <Camera size={16} />
               Take Photos
-            </Link>
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
