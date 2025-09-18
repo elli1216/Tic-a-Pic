@@ -1,4 +1,4 @@
-# Tic a Pic – Instant Photobooth Website
+# Tic a Pic – Instant Photobooth Website   ![Status](https://img.shields.io/badge/Status-In%20Development-orange?style=for-the-badge)
 
 ## 🎯 Overview
 
