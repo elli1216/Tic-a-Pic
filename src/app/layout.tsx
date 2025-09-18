@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Dancing_Script } from 'next/font/google';
 import "@/styles/globals.css";
 import Header from '@/features/home/components/Header';
 import SessionModal from '@/features/photobooth/components/modal/SessionModal';
@@ -9,14 +8,6 @@ import SessionInitializer from '@/features/photobooth/components/session/Session
 import { Toaster } from 'react-hot-toast';
 import useThemeStore from '@/features/common/store/useThemeStore';
 import { QueryProvider } from '@/features/common/providers/QueryProvider';
-
-// Configure the Dancing Script font
-const dancingScript = Dancing_Script({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-dancing-script',
-});
 
 /**
  * Root layout component for the application.
@@ -31,7 +22,7 @@ export default function RootLayout({
 
   return (
     <QueryProvider>
-      <html lang="en" data-theme={theme} className={dancingScript.variable}>
+      <html lang="en" data-theme={theme} suppressHydrationWarning={true}>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
           <meta name="description" content="Take instant photos and create beautiful photo strips with Tic a Pic - no login required!" />
@@ -39,7 +30,7 @@ export default function RootLayout({
           <link rel="icon" href="/favicon.ico" />
           <title>Tic a Pic - Instant Photobooth</title>
         </head>
-        <body className={`min-h-screen bg-base-100 text-base-content ${dancingScript.variable}`}>
+        <body className={`min-h-screen bg-base-100 text-base-content`} suppressHydrationWarning={true}>
           <SessionInitializer />
           <Header />
           <main className="pt-0">
