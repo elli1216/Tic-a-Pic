@@ -17,6 +17,7 @@
     "@stripe/stripe-js": "^7.8.0",
     "@supabase/supabase-js": "^2.56.0",
     "@tanstack/react-query": "^5.85.5",
+    "@tanstack/react-query-devtools": "^5.89.0",
     "daisyui": "^5.0.50",
     "dom-to-image": "^2.6.0",
     "gif.js": "^0.2.0",
