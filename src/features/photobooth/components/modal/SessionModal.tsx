@@ -21,8 +21,7 @@ export default function SessionModal() {
   const createSessionOnLocalStorage = usePhotoboothStore((state) => state.createSessionOnLocalStorage);
   const loadExistingSession = usePhotoboothStore((state) => state.loadExistingSession);
 
-  const [isCreating, setIsCreating] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [state, setState] = useState<'loading' | 'creating' | 'error' | 'success'>('loading');
   const [mode, setMode] = useState<'create' | 'existing'>('create');
 
   const createForm = useForm<CreateSessionForm>({
@@ -38,9 +37,9 @@ export default function SessionModal() {
   });
 
   const onCreateSubmit = async (data: CreateSessionForm) => {
-    if (isCreating) return;
+    if (state === 'creating') return;
 
-    setIsCreating(true);
+    setState('creating');
     try {
       const trimmedNickname = data.nickname.trim();
       await createSession(trimmedNickname || undefined);
@@ -52,16 +51,16 @@ export default function SessionModal() {
       console.error('Failed to create session:', error);
       // Error handling is done in store
     } finally {
-      setIsCreating(false);
+      setState('success');
     }
   };
 
   const handleSkip = async () => {
-    if (isCreating) return;
+    if (state === 'creating') return;
     const confirmation = confirm('Are you sure you want to skip creating a session? This session(your photos) will not be saved.');
     if (!confirmation) return;
     
-    setIsCreating(true);
+    setState('creating');
     try {
       await createSessionOnLocalStorage();
       setShowSessionModal(false);
@@ -71,12 +70,12 @@ export default function SessionModal() {
       console.error('Failed to create session:', error);
       // Error handling is done in store
     } finally {
-      setIsCreating(false);
+      setState('success');
     }
   };
 
   const onLoadSubmit = async (data: LoadSessionForm) => {
-    if (isLoading || !data.sessionId.trim()) return;
+    if (state === 'loading' || !data.sessionId.trim()) return;
 
     const sessionId = data.sessionId.trim().toUpperCase();
 
@@ -86,7 +85,7 @@ export default function SessionModal() {
       return;
     }
 
-    setIsLoading(true);
+    setState('loading');
     try {
       await loadExistingSession(sessionId);
       setShowSessionModal(false);
@@ -105,7 +104,7 @@ export default function SessionModal() {
       }
       console.error('Failed to load session:', error);
     } finally {
-      setIsLoading(false);
+      setState('success');
     }
   };
 
@@ -178,9 +177,9 @@ export default function SessionModal() {
               <button
                 type="submit"
                 className="btn btn-primary flex-1"
-                disabled={isCreating}
+                disabled={state === 'creating'}
               >
-                {isCreating ? (
+                {state === 'creating' ? (
                   <>
                     <span className="loading loading-spinner loading-sm"></span>
                     Creating...
@@ -193,9 +192,9 @@ export default function SessionModal() {
                 type="button"
                 onClick={handleSkip}
                 className="btn btn-ghost flex-1"
-                disabled={isCreating}
+                disabled={state === 'creating'}
               >
-                {isCreating ? 'Creating...' : 'Skip for Now'}
+                {state === 'creating' ? 'Creating...' : 'Skip for Now'}
               </button>
             </div>
           </form>
@@ -252,9 +251,9 @@ export default function SessionModal() {
               <button
                 type="submit"
                 className="btn btn-primary flex-1"
-                disabled={isLoading || !loadForm.formState.isValid}
+                disabled={state === 'loading' || !loadForm.formState.isValid}
               >
-                {isLoading ? (
+                {state === 'loading' ? (
                   <>
                     <span className="loading loading-spinner loading-sm"></span>
                     Loading...
@@ -267,7 +266,7 @@ export default function SessionModal() {
                 type="button"
                 onClick={() => setMode('create')}
                 className="btn btn-ghost flex-1"
-                disabled={isLoading}
+                disabled={state === 'loading' || state === 'creating'}
               >
                 Create New Instead
               </button>
