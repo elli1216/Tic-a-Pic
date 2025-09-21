@@ -23,28 +23,6 @@ const getLocalStrips = (): SavedStrip[] => {
   }
 };
 
-// Helper function to save strips to localStorage
-export const saveLocalStrips = (strips: SavedStrip[]): void => {
-  if (typeof window === 'undefined') return;
-
-  try {
-    localStorage.setItem('tic-a-pic-local-strips', JSON.stringify(strips));
-  } catch (error) {
-    console.error('Error saving local strips:', error);
-  }
-};
-
-// Helper function to clear local strips
-export const clearLocalStrips = (): void => {
-  if (typeof window === 'undefined') return;
-
-  try {
-    localStorage.removeItem('tic-a-pic-local-strips');
-  } catch (error) {
-    console.error('Error clearing local strips:', error);
-  }
-};
-
 export default function SavedStrips() {
   const session = usePhotoboothStore((state) => state.session);
   const router = useRouter();
