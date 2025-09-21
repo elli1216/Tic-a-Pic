@@ -1,4 +1,5 @@
 'use client';
+//test
 
 import React from 'react';
 import { usePhotoboothStore } from '@/features/common/store/usePhotoboothStore';
