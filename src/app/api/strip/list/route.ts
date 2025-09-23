@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseClient } from '@/lib/supabase-client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch strips for the session, including layout information
-    const { data: strips, error } = await supabase
+    const { data: strips, error } = await supabaseClient
       .from('user_strips')
       .select(
         `

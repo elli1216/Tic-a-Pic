@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client with service role key for backend operations
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseClient } from '@/lib/supabase-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,7 +39,7 @@ export async function POST(request: NextRequest) {
     const filename = `${session_id}/strip-${timestamp}.png`;
 
     // Upload strip image to Supabase Storage
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseClient.storage
       .from('strips')
       .upload(filename, buffer, {
         contentType: 'image/png',
@@ -63,10 +57,10 @@ export async function POST(request: NextRequest) {
     // Get public URL for the strip image
     const {
       data: { publicUrl },
-    } = supabase.storage.from('strips').getPublicUrl(filename);
+    } = supabaseClient.storage.from('strips').getPublicUrl(filename);
 
     // Save strip metadata to database
-    const { data: stripRecord, error: dbError } = await supabase
+    const { data: stripRecord, error: dbError } = await supabaseClient
       .from('user_strips')
       .insert({
         session_id,
@@ -82,7 +76,7 @@ export async function POST(request: NextRequest) {
     if (dbError) {
       console.error('Database error:', dbError);
       // Try to delete the uploaded strip image on database error
-      await supabase.storage.from('strips').remove([filename]);
+      await supabaseClient.storage.from('strips').remove([filename]);
       return NextResponse.json(
         { error: 'Failed to save strip metadata' },
         { status: 500 }
