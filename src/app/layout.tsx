@@ -8,6 +8,7 @@ import SessionInitializer from '@/features/photobooth/components/session/Session
 import { Toaster } from 'react-hot-toast';
 import useThemeStore from '@/features/common/store/useThemeStore';
 import { QueryProvider } from '@/features/common/providers/QueryProvider';
+import Loading from './loading';
 
 /**
  * Root layout component for the application.
@@ -18,11 +19,26 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }): React.JSX.Element {
+  const [isRendered, setIsRendered] = React.useState(false);
   const theme = useThemeStore((state) => state.theme);
+
+  React.useEffect(() => {
+    setIsRendered(true);
+  }, []);
+
+  if (!isRendered) {
+    return (
+      <html lang="en" data-theme={theme}>
+        <body className="min-h-screen bg-base-100 text-base-content" suppressHydrationWarning={true}>
+          <Loading />
+        </body>
+      </html>
+    );
+  }
 
   return (
     <QueryProvider>
-      <html lang="en" data-theme={theme} suppressHydrationWarning={true}>
+      <html lang="en" data-theme={theme}>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
           <meta name="description" content="Take instant photos and create beautiful photo strips with Tic a Pic - no login required!" />
@@ -30,7 +46,7 @@ export default function RootLayout({
           <link rel="icon" href="/favicon.ico" />
           <title>Tic a Pic - Instant Photobooth</title>
         </head>
-        <body className={`min-h-screen bg-base-100 text-base-content`} suppressHydrationWarning={true}>
+        <body className="min-h-screen bg-base-100 text-base-content" suppressHydrationWarning={true}>
           <SessionInitializer />
           <Header />
           <main className="pt-0">

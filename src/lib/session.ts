@@ -1,5 +1,3 @@
-'use client';
-
 import { LayoutConfig } from '@/features/photobooth/components/strips/PhotoStripCanvas';
 
 export interface PhotoSession {
