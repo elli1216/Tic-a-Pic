@@ -13,7 +13,6 @@ export default function Header(): React.JSX.Element {
   const setSession = usePhotoboothStore((state) => state.setSession);
   const pathname = usePathname();
   const isTemporarySession = typeof window !== 'undefined' ? localStorage.getItem('isTemporarySession') : null;
-  console.log(isTemporarySession);
 
   // Handle copying session ID to clipboard
   const handleCopySessionId = async () => {

@@ -9,6 +9,7 @@ import { Toaster } from 'react-hot-toast';
 import useThemeStore from '@/features/common/store/useThemeStore';
 import { QueryProvider } from '@/features/common/providers/QueryProvider';
 import Loading from './loading';
+import { themes } from '@/features/common/store/useThemeStore';
 
 /**
  * Root layout component for the application.
@@ -53,7 +54,7 @@ export default function RootLayout({
             {children}
           </main>
           <SessionModal />
-          {theme === `nord` ? (
+          {theme === themes.light ? (
             <Toaster
               position="top-left"
               toastOptions={{

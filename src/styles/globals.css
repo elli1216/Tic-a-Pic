@@ -101,3 +101,73 @@ textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--bc) / 0.5);
 }
+
+@plugin "daisyui/theme" {
+  name: 'tic-light';
+  default: false;
+  prefersdark: false;
+  color-scheme: 'light';
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(96% 0 0);
+  --color-base-300: oklch(92% 0 0);
+  --color-base-content: oklch(18% 0 0);
+  --color-primary: oklch(78% 0.15 35); /* Warm coral-pink */
+  --color-primary-content: oklch(12% 0.04 35);
+  --color-secondary: oklch(74% 0.12 340); /* Soft rose */
+  --color-secondary-content: oklch(15% 0.05 340);
+  --color-accent: oklch(82% 0.14 80); /* Peachy highlight */
+  --color-accent-content: oklch(20% 0.06 80);
+  --color-neutral: oklch(40% 0 0);
+  --color-neutral-content: oklch(96% 0 0);
+  --color-info: oklch(68% 0.16 220); /* Soft periwinkle */
+  --color-info-content: oklch(18% 0.05 220);
+  --color-success: oklch(70% 0.18 140); /* Minty green */
+  --color-success-content: oklch(16% 0.06 140);
+  --color-warning: oklch(80% 0.17 70); /* Sunny yellow */
+  --color-warning-content: oklch(18% 0.07 70);
+  --color-error: oklch(72% 0.2 20); /* Warm red */
+  --color-error-content: oklch(16% 0.08 20);
+  --radius-selector: 1rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: 'tic-dark';
+  default: false;
+  prefersdark: true;
+  color-scheme: 'dark';
+  --color-base-100: oklch(12% 0 0);
+  --color-base-200: oklch(16% 0 0);
+  --color-base-300: oklch(20% 0 0);
+  --color-base-content: oklch(94% 0 0);
+  --color-primary: oklch(72% 0.15 35); /* Rich coral-pink */
+  --color-primary-content: oklch(96% 0.03 35);
+  --color-secondary: oklch(68% 0.12 340); /* Deep rose */
+  --color-secondary-content: oklch(95% 0.04 340);
+  --color-accent: oklch(76% 0.14 80); /* Warm peach */
+  --color-accent-content: oklch(14% 0.05 80);
+  --color-neutral: oklch(30% 0 0);
+  --color-neutral-content: oklch(92% 0 0);
+  --color-info: oklch(60% 0.16 220); /* Moody periwinkle */
+  --color-info-content: oklch(95% 0.04 220);
+  --color-success: oklch(62% 0.18 140); /* Forest mint */
+  --color-success-content: oklch(94% 0.05 140);
+  --color-warning: oklch(74% 0.17 70); /* Amber glow */
+  --color-warning-content: oklch(14% 0.06 70);
+  --color-error: oklch(66% 0.2 20); /* Deep berry red */
+  --color-error-content: oklch(95% 0.05 20);
+  --radius-selector: 1rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}

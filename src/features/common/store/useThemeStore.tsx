@@ -3,7 +3,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type Theme = 'nord' | 'sunset';
+export const themes = {
+  light: 'tic-light',
+  dark: 'tic-dark'
+} as const;
+export type Theme = (typeof themes)[keyof typeof themes];
 
 interface ThemeState {
   theme: Theme;
@@ -18,7 +22,7 @@ interface ThemeState {
 const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
-      theme: 'nord',
+      theme: themes.light,
       hasHydrated: false,
       setTheme: (theme: Theme) => {
         set({ theme });
