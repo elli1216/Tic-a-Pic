@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseClient } from '@/lib/supabase-client';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const filename = `${session_id}/strip-${timestamp}.png`;
 
     // Upload strip image to Supabase Storage
-    const { error: uploadError } = await supabaseClient.storage
+    const { error: uploadError } = await supabaseAdmin.storage
       .from('strips')
       .upload(filename, buffer, {
         contentType: 'image/png',
@@ -57,10 +57,25 @@ export async function POST(request: NextRequest) {
     // Get public URL for the strip image
     const {
       data: { publicUrl },
-    } = supabaseClient.storage.from('strips').getPublicUrl(filename);
+    } = supabaseAdmin.storage.from('strips').getPublicUrl(filename);
+
+    // Ensure session exists to satisfy foreign key constraint in user_strips
+    const { error: sessionUpsertError } = await supabaseAdmin
+      .from('sessions')
+      .upsert({ session_id }, { onConflict: 'session_id' });
+
+    if (sessionUpsertError) {
+      console.error('Error upserting session:', sessionUpsertError);
+      // Attempt to delete the uploaded file if we can't save the session
+      await supabaseAdmin.storage.from('strips').remove([filename]);
+      return NextResponse.json(
+        { error: 'Failed to save session before saving strip' },
+        { status: 500 }
+      );
+    }
 
     // Save strip metadata to database
-    const { data: stripRecord, error: dbError } = await supabaseClient
+    const { data: stripRecord, error: dbError } = await supabaseAdmin
       .from('user_strips')
       .insert({
         session_id,
@@ -76,7 +91,7 @@ export async function POST(request: NextRequest) {
     if (dbError) {
       console.error('Database error:', dbError);
       // Try to delete the uploaded strip image on database error
-      await supabaseClient.storage.from('strips').remove([filename]);
+      await supabaseAdmin.storage.from('strips').remove([filename]);
       return NextResponse.json(
         { error: 'Failed to save strip metadata' },
         { status: 500 }
