@@ -1,6 +1,6 @@
 # Tic a Pic – Instant Photobooth Website
 
-## 🎯 Overview
+## Overview
 
 A no-login, mobile-first photobooth web app where users can:
 
@@ -11,7 +11,7 @@ A no-login, mobile-first photobooth web app where users can:
 
 No accounts. No login. Just instant fun.
 
-## 💡 Key Features
+## Key Features
 
 - ✅ Free & premium photobooth layouts
 - ✅ GCash/Maya QR payment → auto-generated unique code
@@ -27,13 +27,13 @@ No accounts. No login. Just instant fun.
 - ✅ DIY layout creator + custom stickers
 - ✅ Downloadable print guide (PDF/Word) for accurate printing
 
-## 💰 Monetization
+## Monetization (Not yet implemented)
 
 - One-time GCash/Maya payment → generates unique code
 - Optional donations to sustain the site
 - Witty payment note: _"Just Gcash my location, sir 😹"_
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: Next.js (App Router), React, TypeScript, Tailwind CSS, DaisyUI
 - **Hosting**: Vercel (Edge Functions enabled)
@@ -43,7 +43,7 @@ No accounts. No login. Just instant fun.
 - **Payments**: Stripe (GCash via QR) → Webhook generates code
 - **AI (Future)**: Cloudflare Workers AI or external API for background removal, face alignment, merging
 
-## 📁 How to Use This in Cursor
+## How to Use This in Cursor
 
 This project uses **no authentication**. All state is tied to:
 
