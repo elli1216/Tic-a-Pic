@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       });
 
     if (uploadError) {
-      console.error('Upload error:', uploadError);
+      
       return NextResponse.json(
         { error: 'Failed to upload strip image' },
         { status: 500 }
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       .upsert({ session_id }, { onConflict: 'session_id' });
 
     if (sessionUpsertError) {
-      console.error('Error upserting session:', sessionUpsertError);
+      
       // Attempt to delete the uploaded file if we can't save the session
       await supabaseAdmin.storage.from('strips').remove([filename]);
       return NextResponse.json(
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (dbError) {
-      console.error('Database error:', dbError);
+      
       // Try to delete the uploaded strip image on database error
       await supabaseAdmin.storage.from('strips').remove([filename]);
       return NextResponse.json(
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
       strip: stripRecord,
     });
   } catch (error) {
-    console.error('Error in strip save route:', error);
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
