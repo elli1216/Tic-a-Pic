@@ -43,7 +43,7 @@ export default function CameraSection({
 
   // Camera error handler
   const handleUserMediaError = useCallback((error: string | DOMException) => {
-    console.error('Error accessing camera:', error);
+    
     setCameraReady(false);
     setShowErrorFallback(true);
 
@@ -72,7 +72,7 @@ export default function CameraSection({
   return (
     <div className="space-y-4">
       <div className="card bg-base-100 shadow-xl overflow-hidden">
-        <div className="relative aspect-[4/3] bg-black">
+        <div className="relative aspect-[3/4] bg-black">
           {/* Webcam Preview */}
           <Webcam
             ref={webcamRef}

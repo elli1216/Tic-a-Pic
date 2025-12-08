@@ -7,7 +7,7 @@ export const clearLocalStrips = (): void => {
   try {
     localStorage.removeItem('tic-a-pic-local-strips');
   } catch (error) {
-    console.error('Error clearing local strips:', error);
+    
   }
 };
 
@@ -18,7 +18,7 @@ export const saveLocalStrips = (strips: SavedStrip[]): void => {
   try {
     localStorage.setItem('tic-a-pic-local-strips', JSON.stringify(strips));
   } catch (error) {
-    console.error('Error saving local strips:', error);
+    
   }
 };
 
@@ -49,7 +49,7 @@ export const getLocalStrips = (): SavedStrip[] => {
     const localStrips = localStorage.getItem('tic-a-pic-local-strips');
     return localStrips ? JSON.parse(localStrips) : [];
   } catch (error) {
-    console.error('Error loading local strips:', error);
+    
     return [];
   }
 };
@@ -57,19 +57,21 @@ export const getLocalStrips = (): SavedStrip[] => {
 export const saveStripToAPI = async (
   data: SaveStripData
 ): Promise<SaveStripResponse> => {
-  const response = await fetch('/api/strip/save', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
 
-  if (!response.ok) {
+  try{
+    const response = await fetch('/api/strip/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    return response.json();
+  } catch (error) {
+    console.error('Error saving strip:', error);
     throw new Error('Failed to save strip');
   }
-
-  return response.json();
 };
 
 const generateDate = () => {

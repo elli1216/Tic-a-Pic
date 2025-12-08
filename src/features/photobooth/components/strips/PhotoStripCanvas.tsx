@@ -123,7 +123,7 @@ export default function PhotoStripCanvas({
             ctx.restore();
           }
         } catch (error) {
-          console.error('Error loading photo:', error);
+          
 
           // Draw placeholder
           ctx.fillStyle = '#9ca3af';
@@ -182,7 +182,7 @@ export default function PhotoStripCanvas({
         ctx.textAlign = 'center';
         ctx.fillText('Made with Tic a Pic', qrX + qrSize / 2, qrY + qrSize + 20);
       } catch (error) {
-        console.error('Error adding QR watermark:', error);
+        
       }
     }
   }, [showWatermark, layout.slots, layout.background, photos]);
