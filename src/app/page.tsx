@@ -4,6 +4,7 @@ import React from 'react';
 import {
   CameraSection,
   PhotoStripPreview,
+  LayoutPicker,
   SessionInfo,
   Instructions
 } from '@/features/photobooth/components';
@@ -50,6 +51,7 @@ export default function PhotoboothPage() {
 
           {/* Photo Strip Preview Section */}
           <div className="space-y-4">
+            <LayoutPicker />
             <PhotoStripPreview
               boothPhotos={photobooth.boothPhotos}
               selectedLayout={photobooth.selectedLayout}

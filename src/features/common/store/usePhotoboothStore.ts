@@ -7,6 +7,93 @@ import { SavedStrip } from '@/shared/types/TYPES';
 
 export type AppState = 'camera' | 'preview' | 'strip' | 'layouts' | 'booth';
 
+export const LAYOUT_PRESETS: LayoutConfig[] = [
+  {
+    id: 'classic-white',
+    name: 'Classic White',
+    type: 'free',
+    slots: [
+      { x: 10, y: 5, width: 80, height: 20 },
+      { x: 10, y: 27, width: 80, height: 20 },
+      { x: 10, y: 49, width: 80, height: 20 },
+      { x: 10, y: 71, width: 80, height: 20 },
+    ],
+    background: '#ffffff',
+  },
+  {
+    id: 'soft-pink',
+    name: 'Soft Pink',
+    type: 'free',
+    slots: [
+      { x: 10, y: 5, width: 80, height: 20 },
+      { x: 10, y: 27, width: 80, height: 20 },
+      { x: 10, y: 49, width: 80, height: 20 },
+      { x: 10, y: 71, width: 80, height: 20 },
+    ],
+    background: '#fce7f3',
+  },
+  {
+    id: 'sunny-yellow',
+    name: 'Sunny Yellow',
+    type: 'free',
+    slots: [
+      { x: 10, y: 5, width: 80, height: 20 },
+      { x: 10, y: 27, width: 80, height: 20 },
+      { x: 10, y: 49, width: 80, height: 20 },
+      { x: 10, y: 71, width: 80, height: 20 },
+    ],
+    background: '#fef9c3',
+  },
+  {
+    id: 'sky-blue',
+    name: 'Sky Blue',
+    type: 'free',
+    slots: [
+      { x: 10, y: 5, width: 80, height: 20 },
+      { x: 10, y: 27, width: 80, height: 20 },
+      { x: 10, y: 49, width: 80, height: 20 },
+      { x: 10, y: 71, width: 80, height: 20 },
+    ],
+    background: '#dbeafe',
+  },
+  {
+    id: 'retro-orange',
+    name: 'Retro Orange',
+    type: 'free',
+    slots: [
+      { x: 10, y: 5, width: 80, height: 20 },
+      { x: 10, y: 27, width: 80, height: 20 },
+      { x: 10, y: 49, width: 80, height: 20 },
+      { x: 10, y: 71, width: 80, height: 20 },
+    ],
+    background: '#ffedd5',
+  },
+  {
+    id: 'tilted-fun',
+    name: 'Tilted Fun',
+    type: 'free',
+    slots: [
+      { x: 10, y: 5, width: 80, height: 20, rotation: -3 },
+      { x: 10, y: 28, width: 80, height: 20, rotation: 2 },
+      { x: 10, y: 51, width: 80, height: 20, rotation: -2 },
+      { x: 10, y: 74, width: 80, height: 20, rotation: 3 },
+    ],
+    background: '#f3e8ff',
+  },
+  {
+    id: 'polaroid',
+    name: 'Polaroid',
+    type: 'free',
+    slots: [
+      { x: 5, y: 8, width: 90, height: 18 },
+      { x: 5, y: 30, width: 90, height: 18 },
+      { x: 5, y: 52, width: 90, height: 18 },
+      { x: 5, y: 74, width: 90, height: 18 },
+    ],
+    background: '#ffffff',
+  },
+];
+
 interface PhotoboothState {
   // App state
   appState: AppState;
@@ -85,18 +172,7 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
   countdown: 0,
   boothPhotos: [null, null, null, null],
 
-  selectedLayout: {
-    id: 'classic-4',
-    name: 'Classic Strip',
-    type: 'free',
-    slots: [
-      { x: 10, y: 5, width: 80, height: 20 },
-      { x: 10, y: 27, width: 80, height: 20 },
-      { x: 10, y: 49, width: 80, height: 20 },
-      { x: 10, y: 71, width: 80, height: 20 },
-    ],
-    background: '#ffffff',
-  },
+  selectedLayout: LAYOUT_PRESETS[0],
   toast: null,
 
   // Setters
@@ -181,18 +257,7 @@ export const usePhotoboothStore = create<PhotoboothState>((set, get) => ({
       currentSlot: 0,
       isCapturing: false,
       countdown: 0,
-      selectedLayout: {
-        id: 'classic-4',
-        name: 'Classic Strip',
-        type: 'free',
-        slots: [
-          { x: 10, y: 5, width: 80, height: 20 },
-          { x: 10, y: 27, width: 80, height: 20 },
-          { x: 10, y: 49, width: 80, height: 20 },
-          { x: 10, y: 71, width: 80, height: 20 },
-        ],
-        background: '#ffffff',
-      },
+      selectedLayout: LAYOUT_PRESETS[0],
     });
   },
 
