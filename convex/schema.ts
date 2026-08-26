@@ -1,14 +1,11 @@
 import { defineSchema, defineTable } from "convex/server";
+import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  users: defineTable({
-    name: v.string(),
-    email: v.string(),
-    tokenIdentifier: v.string(),
-    isPremium: v.boolean(),
-  }).index("by_token", ["tokenIdentifier"]),
+  ...authTables,
 
+  // Photobooth Rooms
   rooms: defineTable({
     roomCode: v.string(),
     hostUserId: v.optional(v.id("users")),
@@ -24,6 +21,7 @@ export default defineSchema({
     triggerCountdownAt: v.optional(v.number()),
   }).index("by_code", ["roomCode"]),
 
+  // WebRTC Signals
   roomSignals: defineTable({
     roomId: v.id("rooms"),
     sender: v.string(), // "host" | "guest"
@@ -31,6 +29,7 @@ export default defineSchema({
     payload: v.string(),
   }).index("by_room", ["roomId"]),
 
+  // Photo Strips
   photoStrips: defineTable({
     userId: v.optional(v.id("users")),
     storageId: v.id("_storage"),

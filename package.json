@@ -10,6 +10,7 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "@convex-dev/auth": "^0.0.87",
     "@react-router/node": "^8",
     "@react-router/serve": "^8",
     "canvas-confetti": "^1.9.4",
@@ -17,6 +18,7 @@
     "convex": "^1.45.0",
     "framer-motion": "^12.4.7",
     "isbot": "^5.1.36",
+    "jose": "^5.9.6",
     "lucide-react": "^1.16.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
+import type * as http from "../http.js";
 import type * as photoStrips from "../photoStrips.js";
 import type * as roomSignals from "../roomSignals.js";
 import type * as rooms from "../rooms.js";
@@ -20,6 +22,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
+  http: typeof http;
   photoStrips: typeof photoStrips;
   roomSignals: typeof roomSignals;
   rooms: typeof rooms;

@@ -1,8 +1,11 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { Navbar } from "../components/layout/Navbar";
-import { Camera, Film, Sparkles, Heart, Users, Cloud, ArrowRight, ShieldCheck, Download } from "lucide-react";
-import { useQuery } from "convex/react";
+import { Footer } from "../components/layout/Footer";
+import { Camera, Film, Sparkles, Users, Cloud, ArrowRight, HardDrive, Download, Eye } from "lucide-react";
+import { useQuery, useConvexAuth } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { getLocalPhotoStrips, type LocalPhotoStrip } from "../lib/localPhotoStorage";
 
 export function meta() {
   return [
@@ -12,8 +15,23 @@ export function meta() {
 }
 
 export default function DashboardPage() {
-  // Query public or user photo strips from Convex if available
-  const publicStrips = useQuery(api.photoStrips.listPublicPhotoStrips, { limit: 6 });
+  const { isAuthenticated } = useConvexAuth();
+
+  const userCloudStrips = useQuery(
+    api.photoStrips.listMyPhotoStrips,
+    isAuthenticated ? {} : "skip"
+  );
+  const [localStrips, setLocalStrips] = useState<LocalPhotoStrip[]>([]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setLocalStrips(getLocalPhotoStrips().slice(0, 4));
+    }
+  }, [isAuthenticated]);
+
+  const stripsCount = isAuthenticated
+    ? (userCloudStrips?.length ?? 0)
+    : localStrips.length;
 
   return (
     <div className="min-h-screen bg-[#0d0c11] text-zinc-100 flex flex-col film-grain">
@@ -25,13 +43,13 @@ export default function DashboardPage() {
           <div className="relative z-10 max-w-2xl flex flex-col gap-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/30 text-xs font-semibold text-pink-300 w-fit">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Studio Cloud Vault</span>
+              <span>Studio {isAuthenticated ? "Cloud Vault" : "Local Hub"}</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
               Your Photobooth Hub
             </h1>
             <p className="text-sm sm:text-base text-zinc-400">
-              Launch instant single-camera or long-distance duo sessions, access your rendered photo strips, and share memories forever.
+              Launch instant single-camera or long-distance duo sessions, access your saved photo strips, and manage your {isAuthenticated ? "cloud" : "local"} memories.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 mt-3">
@@ -48,7 +66,7 @@ export default function DashboardPage() {
                 className="px-5 py-3 rounded-full bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700 text-zinc-200 font-semibold text-xs transition flex items-center gap-2"
               >
                 <Film className="w-4 h-4 text-pink-400" />
-                <span>View All Saved Strips</span>
+                <span>View Saved Strips ({stripsCount})</span>
               </Link>
             </div>
           </div>
@@ -58,7 +76,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick Cards Grid */}
+        {/* Quick Launch Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-6 rounded-2xl bg-zinc-900/70 border border-zinc-800 flex flex-col gap-3">
             <div className="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center">
@@ -66,7 +84,7 @@ export default function DashboardPage() {
             </div>
             <h3 className="font-bold text-base text-white">In-Person Session</h3>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              Snap 4 shots in rapid sequence with real-time AI background removal.
+              Snap 4 shots in rapid sequence with real-time AI background removal. Saves directly to {isAuthenticated ? "Cloud Vault" : "browser storage"}.
             </p>
             <Link
               to="/photobooth"
@@ -82,7 +100,7 @@ export default function DashboardPage() {
             </div>
             <h3 className="font-bold text-base text-white">Long-Distance Duo</h3>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              WebRTC dual stream syncs both cameras on a single virtual canvas.
+              WebRTC dual stream syncs both cameras on a single virtual canvas across long distances.
             </p>
             <Link
               to="/photobooth"
@@ -96,20 +114,24 @@ export default function DashboardPage() {
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
               <Cloud className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-base text-white">Cloud Storage Sync</h3>
+            <h3 className="font-bold text-base text-white">
+              {isAuthenticated ? "Cloud Vault Synced" : "Cloud Storage"}
+            </h3>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              Strips are stored in Convex file storage and accessible anywhere.
+              {isAuthenticated
+                ? "Your high-resolution strips are automatically backed up to your encrypted Convex Cloud Vault."
+                : "Log in to sync your photo strips permanently across all devices."}
             </p>
             <Link
               to="/dashboard/photoStrips"
               className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 mt-auto pt-2"
             >
-              Explore Vault <ArrowRight className="w-3.5 h-3.5" />
+              Explore Strips <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
 
-        {/* Gallery Preview Section */}
+        {/* Recent Photostrips Preview */}
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -121,57 +143,88 @@ export default function DashboardPage() {
               to="/dashboard/photoStrips"
               className="text-xs font-medium text-pink-400 hover:text-pink-300 flex items-center gap-1"
             >
-              View Full Gallery <ArrowRight className="w-3.5 h-3.5" />
+              View All ({stripsCount}) <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {publicStrips === undefined ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-64 rounded-2xl bg-zinc-900 animate-pulse border border-zinc-800" />
-              ))}
-            </div>
-          ) : publicStrips.length === 0 ? (
+          {stripsCount === 0 ? (
             <div className="p-12 rounded-2xl bg-zinc-900/40 border border-zinc-800 text-center flex flex-col items-center gap-3">
               <Film className="w-10 h-10 text-zinc-600" />
               <p className="text-sm text-zinc-400">No saved photostrips yet.</p>
               <Link
                 to="/photobooth"
-                className="px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-full text-xs font-bold transition"
+                className="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-full text-xs font-bold transition"
               >
                 Create Your First Strip
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {publicStrips.map((strip) => (
-                <div
-                  key={strip._id}
-                  className="group relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-pink-500/50 transition shadow-lg"
-                >
-                  <img
-                    src={strip.thumbnailUrl || strip.url || ""}
-                    alt="Photo Strip"
-                    className="w-full h-64 object-cover group-hover:scale-105 transition duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex items-end p-3">
-                    {strip.url && (
-                      <a
-                        href={strip.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-3 py-1.5 rounded-full bg-white text-zinc-900 text-xs font-bold flex items-center gap-1.5 shadow"
-                      >
-                        <Download className="w-3.5 h-3.5" /> Download
-                      </a>
-                    )}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {/* Authenticated Mode: Show Cloud strips */}
+              {isAuthenticated &&
+                userCloudStrips?.slice(0, 4).map((strip) => (
+                  <div
+                    key={strip._id}
+                    className="group relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-purple-500/50 transition shadow-lg flex flex-col"
+                  >
+                    <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full bg-zinc-950/80 text-[9px] font-bold text-purple-300 flex items-center gap-1">
+                      <Cloud className="w-2.5 h-2.5" /> Cloud Vault
+                    </div>
+                    <img
+                      src={strip.thumbnailUrl || strip.url || ""}
+                      alt="Photo Strip"
+                      className="w-full h-56 object-cover group-hover:scale-105 transition duration-300"
+                    />
+                    <div className="p-3 bg-zinc-900/90 border-t border-zinc-800 flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-zinc-400 capitalize">{strip.frameTheme.replace("-", " ")}</span>
+                      {strip.url && (
+                        <a
+                          href={strip.url}
+                          download="strip.png"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-purple-400 hover:text-purple-300"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+
+              {/* Anonymous Mode: Show Local strips */}
+              {!isAuthenticated &&
+                localStrips.map((strip) => (
+                  <div
+                    key={strip.id}
+                    className="group relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-pink-500/50 transition shadow-lg flex flex-col"
+                  >
+                    <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full bg-zinc-950/80 text-[9px] font-bold text-pink-300 flex items-center gap-1">
+                      <HardDrive className="w-2.5 h-2.5" /> Local
+                    </div>
+                    <img
+                      src={strip.thumbnailDataUrl || strip.dataUrl}
+                      alt="Photo Strip"
+                      className="w-full h-56 object-cover group-hover:scale-105 transition duration-300"
+                    />
+                    <div className="p-3 bg-zinc-900/90 border-t border-zinc-800 flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-zinc-400 capitalize">{strip.frameTheme.replace("-", " ")}</span>
+                      <a
+                        href={strip.dataUrl}
+                        download="strip.png"
+                        className="text-pink-400 hover:text-pink-300"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
             </div>
           )}
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

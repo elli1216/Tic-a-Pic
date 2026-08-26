@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Generate an upload URL for saving a photo strip directly to Convex file storage
 export const generateUploadUrl = mutation({
@@ -18,9 +19,10 @@ export const savePhotoStrip = mutation({
     frameTheme: v.string(),
     isDuoMode: v.boolean(),
     isPublic: v.boolean(),
-    userId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
+    const authUserId = await getAuthUserId(ctx);
+
     const photoStripId = await ctx.db.insert("photoStrips", {
       storageId: args.storageId,
       thumbnailStorageId: args.thumbnailStorageId,
@@ -28,7 +30,7 @@ export const savePhotoStrip = mutation({
       frameTheme: args.frameTheme,
       isDuoMode: args.isDuoMode,
       isPublic: args.isPublic,
-      userId: args.userId,
+      userId: authUserId || undefined,
     });
     return photoStripId;
   },
@@ -56,19 +58,18 @@ export const getPhotoStrip = query({
   },
 });
 
-// List photo strips for a specific user
-export const listUserPhotoStrips = query({
-  args: {
-    userId: v.optional(v.id("users")),
-  },
-  handler: async (ctx, args) => {
-    if (!args.userId) return [];
+// List photo strips for the currently logged-in user
+export const listMyPhotoStrips = query({
+  args: {},
+  handler: async (ctx) => {
+    const authUserId = await getAuthUserId(ctx);
+    if (!authUserId) return [];
 
     const strips = await ctx.db
       .query("photoStrips")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", authUserId))
       .order("desc")
-      .collect();
+      .take(50);
 
     return await Promise.all(
       strips.map(async (strip) => {

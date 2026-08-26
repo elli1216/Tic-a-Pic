@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { Link } from "react-router";
 import { Navbar } from "../components/layout/Navbar";
 import { useUserMedia } from "../hooks/useUserMedia";
 import { useBoothStore } from "../stores/useBoothStore";
@@ -8,17 +9,14 @@ import { FilterSelector } from "../components/photobooth/FilterSelector";
 import { CountdownOverlay } from "../components/photobooth/CountdownOverlay";
 import { ShotGallerySidebar } from "../components/photobooth/ShotGallerySidebar";
 import { soundFx } from "../lib/utils";
+import { saveLocalPhotoStrip } from "../lib/localPhotoStorage";
 import {
   Camera,
   FlipHorizontal,
   RotateCcw,
   Sparkles,
-  Settings2,
-  Download,
-  Share2,
-  CheckCircle,
+  HardDrive,
   Film,
-  Zap,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -32,7 +30,6 @@ export function meta() {
 export default function PhotoboothPage() {
   const {
     videoRef,
-    stream,
     devices,
     activeDeviceId,
     error: videoError,
@@ -55,14 +52,13 @@ export default function PhotoboothPage() {
     isMirrored,
     setIsMirrored,
     fps,
-    step,
-    setStep,
     mode,
     resetSession,
+    selectedFrameId,
   } = useBoothStore();
 
   const [isShootingSequence, setIsShootingSequence] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [savedLocally, setSavedLocally] = useState(false);
   const isSequenceRunningRef = useRef(false);
 
   // Take a single photo with countdown
@@ -109,6 +105,7 @@ export default function PhotoboothPage() {
     setIsShootingSequence(true);
     isSequenceRunningRef.current = true;
     clearShots();
+    setSavedLocally(false);
 
     for (let shotIndex = 1; shotIndex <= 4; shotIndex++) {
       if (!isSequenceRunningRef.current) break;
@@ -132,6 +129,21 @@ export default function PhotoboothPage() {
     });
   }, [isShootingSequence, clearShots, takeSingleShot]);
 
+  // Save strip strictly to local storage
+  const handleSaveToLocalStorage = () => {
+    if (capturedShots.length === 0) return;
+
+    saveLocalPhotoStrip({
+      dataUrl: capturedShots[0].dataUrl,
+      cardLayout: "classic_strip_4x1",
+      frameTheme: selectedFrameId,
+      isDuoMode: mode === "duo_remote",
+    });
+
+    setSavedLocally(true);
+    setTimeout(() => setSavedLocally(false), 3500);
+  };
+
   // Stop sequence if component unmounts
   useEffect(() => {
     return () => {
@@ -146,7 +158,8 @@ export default function PhotoboothPage() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 flex flex-col gap-4">
         {/* Top Control Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-zinc-900/80 backdrop-blur-md rounded-2xl border border-zinc-800 shadow-md">
-          <div className="flex items-center gap-3">
+          {/* Left: Mode Status + Saved Strips Link */}
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-bold uppercase tracking-wider text-zinc-300">
@@ -155,18 +168,28 @@ export default function PhotoboothPage() {
             </div>
 
             {fps > 0 && (
-              <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-zinc-800 text-[10px] font-mono text-zinc-400">
+              <span className="hidden md:inline-block px-2 py-0.5 rounded bg-zinc-800 text-[10px] font-mono text-zinc-400">
                 {fps} FPS
               </span>
             )}
+
+            {/* Saved Strips Button */}
+            <Link
+              to="/dashboard/photoStrips"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-xs font-semibold border border-zinc-700 transition ml-1 sm:ml-2 shadow-sm"
+            >
+              <Film className="w-3.5 h-3.5 text-pink-400" />
+              <span>Saved Strips</span>
+            </Link>
           </div>
 
+          {/* Right: Camera Tools */}
           <div className="flex items-center gap-2">
             {/* Mirror Toggle */}
             <button
               onClick={() => setIsMirrored(!isMirrored)}
               title={isMirrored ? "Selfie Mirror: ON" : "Selfie Mirror: OFF"}
-              className={`p-2 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition ${
+              className={`p-2 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
                 isMirrored
                   ? "bg-pink-950/40 border-pink-500/50 text-pink-300"
                   : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-white"
@@ -182,7 +205,7 @@ export default function PhotoboothPage() {
                 <button
                   key={sec}
                   onClick={() => setCountdownSeconds(sec)}
-                  className={`px-2.5 py-1 rounded-lg font-semibold transition ${
+                  className={`px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer ${
                     countdownSeconds === sec
                       ? "bg-pink-600 text-white shadow-sm"
                       : "text-zinc-400 hover:text-zinc-200"
@@ -198,7 +221,7 @@ export default function PhotoboothPage() {
               <select
                 value={activeDeviceId || ""}
                 onChange={(e) => switchCamera(e.target.value)}
-                className="bg-zinc-800 border border-zinc-700 text-xs text-zinc-300 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-pink-500"
+                className="bg-zinc-800 border border-zinc-700 text-xs text-zinc-300 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-pink-500 cursor-pointer"
               >
                 {devices.map((device) => (
                   <option key={device.deviceId} value={device.deviceId}>
@@ -212,7 +235,7 @@ export default function PhotoboothPage() {
             <button
               onClick={resetSession}
               title="Reset Booth"
-              className="p-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-zinc-400 hover:text-white transition"
+              className="p-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-zinc-400 hover:text-white transition cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
@@ -241,7 +264,7 @@ export default function PhotoboothPage() {
                 <button
                   disabled={isShootingSequence || Boolean(videoError)}
                   onClick={startFourShotSequence}
-                  className="group relative flex items-center gap-2.5 px-6 py-3.5 rounded-full bg-gradient-to-r from-pink-600 via-rose-500 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-black text-sm shadow-xl shadow-pink-500/30 hover:shadow-pink-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition transform hover:scale-105 active:scale-95"
+                  className="group relative flex items-center gap-2.5 px-6 py-3.5 rounded-full bg-gradient-to-r from-pink-600 via-rose-500 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-black text-sm shadow-xl shadow-pink-500/30 hover:shadow-pink-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition transform hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4 animate-spin group-hover:animate-bounce" />
                   <span>{isShootingSequence ? `Shooting (${capturedShots.length}/4)...` : "Start 4-Shot Shoot"}</span>
@@ -252,7 +275,7 @@ export default function PhotoboothPage() {
                   disabled={isShootingSequence || Boolean(videoError)}
                   onClick={takeSingleShot}
                   title="Take single snapshot"
-                  className="p-3.5 rounded-full bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-300 hover:text-white shadow-lg backdrop-blur-md disabled:opacity-50 transition transform hover:scale-105 active:scale-95"
+                  className="p-3.5 rounded-full bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-300 hover:text-white shadow-lg backdrop-blur-md disabled:opacity-50 transition transform hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   <Camera className="w-5 h-5 text-pink-400" />
                 </button>
@@ -269,10 +292,15 @@ export default function PhotoboothPage() {
           {/* Side Photostrip 4-Slot Progress Gallery */}
           <div className="lg:col-span-1 h-full min-h-[350px]">
             <ShotGallerySidebar
-              onProceedToCustomize={() => {
-                alert("All 4 shots ready! Proceeding to strip design customizer.");
-              }}
+              onProceedToCustomize={handleSaveToLocalStorage}
             />
+
+            {savedLocally && (
+              <div className="mt-2 p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center gap-2 justify-center shadow-lg animate-bounce">
+                <HardDrive className="w-4 h-4 text-emerald-400" />
+                <span>Saved to local browser storage!</span>
+              </div>
+            )}
           </div>
         </div>
       </main>
