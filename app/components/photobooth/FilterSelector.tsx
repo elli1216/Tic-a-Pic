@@ -1,9 +1,18 @@
 import { useBoothStore } from "../../stores/useBoothStore";
 import { FILTER_PRESETS } from "../../types/booth";
-import { Sliders, Sparkles, Check } from "lucide-react";
+import { Sliders, Check } from "lucide-react";
 
-export function FilterSelector() {
-  const { selectedFilterId, setSelectedFilterId } = useBoothStore();
+interface FilterSelectorProps {
+  className?: string;
+  gridMode?: boolean;
+}
+
+export function FilterSelector({
+  className = "",
+  gridMode = true,
+}: FilterSelectorProps) {
+  const selectedFilterId = useBoothStore((s) => s.selectedFilterId);
+  const setSelectedFilterId = useBoothStore((s) => s.setSelectedFilterId);
 
   const getFilterColorPreview = (id: string) => {
     switch (id) {
@@ -23,17 +32,25 @@ export function FilterSelector() {
   };
 
   return (
-    <div className="flex flex-col gap-2.5 p-4 bg-zinc-900/90 backdrop-blur-md rounded-2xl border border-zinc-800 text-white shadow-xl">
+    <div
+      className={`flex flex-col gap-2.5 p-3.5 bg-zinc-900/90 backdrop-blur-md rounded-2xl border border-zinc-800 text-white shadow-xl ${className}`}
+    >
       <div className="flex items-center gap-2">
         <div className="w-6 h-6 rounded-lg bg-purple-500/10 flex items-center justify-center">
           <Sliders className="w-3.5 h-3.5 text-purple-400" />
         </div>
         <h3 className="text-xs font-bold tracking-wider uppercase text-zinc-200">
-          Color Aesthetics & Film Presets
+          Color Aesthetics & Film
         </h3>
       </div>
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+      <div
+        className={
+          gridMode
+            ? "grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1 scrollbar-thin"
+            : "flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin"
+        }
+      >
         {FILTER_PRESETS.map((filter) => {
           const isSelected = selectedFilterId === filter.id;
           const gradient = getFilterColorPreview(filter.id);
@@ -43,7 +60,7 @@ export function FilterSelector() {
               key={filter.id}
               type="button"
               onClick={() => setSelectedFilterId(filter.id)}
-              className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                 isSelected
                   ? "bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-lg shadow-pink-500/25 font-bold ring-2 ring-pink-500/30"
                   : "bg-zinc-950/70 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 hover:border-zinc-700"
@@ -51,11 +68,11 @@ export function FilterSelector() {
             >
               {/* Mini color swatch dot */}
               <div
-                className={`w-3 h-3 rounded-full bg-gradient-to-tr ${gradient} shadow-inner flex items-center justify-center`}
+                className={`w-3 h-3 rounded-full bg-gradient-to-tr ${gradient} shadow-inner flex items-center justify-center flex-shrink-0`}
               >
                 {isSelected && <Check className="w-2 h-2 text-white stroke-[3]" />}
               </div>
-              <span>{filter.name}</span>
+              <span className="truncate text-[11px]">{filter.name}</span>
             </button>
           );
         })}

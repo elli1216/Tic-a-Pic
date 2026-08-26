@@ -21,17 +21,15 @@ export const CameraCompositor = forwardRef<CameraCompositorHandle, CameraComposi
     const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const bgImageCache = useRef<Map<string, HTMLImageElement>>(new Map());
 
-    const {
-      selectedBackgroundId,
-      customBackgroundUrl,
-      selectedFilterId,
-      isSegmentationActive,
-      isSegmentationReady,
-      setIsSegmentationReady,
-      setFps,
-      isMirrored,
-      isFlashActive,
-    } = useBoothStore();
+    const selectedBackgroundId = useBoothStore((s) => s.selectedBackgroundId);
+    const customBackgroundUrl = useBoothStore((s) => s.customBackgroundUrl);
+    const selectedFilterId = useBoothStore((s) => s.selectedFilterId);
+    const isSegmentationActive = useBoothStore((s) => s.isSegmentationActive);
+    const isSegmentationReady = useBoothStore((s) => s.isSegmentationReady);
+    const setIsSegmentationReady = useBoothStore((s) => s.setIsSegmentationReady);
+    const setFps = useBoothStore((s) => s.setFps);
+    const isMirrored = useBoothStore((s) => s.isMirrored);
+    const isFlashActive = useBoothStore((s) => s.isFlashActive);
 
     const [isModelLoading, setIsModelLoading] = useState(false);
     const lastFrameTimeRef = useRef<number>(performance.now());

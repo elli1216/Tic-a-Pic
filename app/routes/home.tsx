@@ -31,7 +31,7 @@ export function meta() {
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { setMode } = useBoothStore();
+  const setMode = useBoothStore((s) => s.setMode);
 
   const handleStartMode = (mode: "solo" | "duo_local" | "duo_remote") => {
     setMode(mode);
@@ -58,22 +58,23 @@ export default function HomePage() {
           {/* Heading */}
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white leading-[1.08] max-w-4xl">
             Strike a Pose. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-rose-400 to-purple-500">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-pink-400 via-rose-400 to-purple-500">
               Keep the Magic Forever.
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className="max-w-2xl text-sm sm:text-base md:text-lg text-zinc-400 font-normal leading-relaxed">
-            The retro web photobooth designed for couples, duos, and best friends. 
-            Client-side AI automatically isolates your foreground and transports you to aesthetic scenes in real time.
+            The retro web photobooth designed for couples, duos, and best
+            friends. Client-side AI automatically isolates your foreground and
+            transports you to aesthetic scenes in real time.
           </p>
 
           {/* Primary CTA Button */}
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center mt-2">
             <Link
               to="/photobooth"
-              className="w-full sm:w-auto px-10 py-4 sm:py-5 rounded-full bg-gradient-to-r from-pink-600 via-rose-500 to-purple-600 text-white font-black text-base shadow-2xl shadow-pink-500/30 hover:shadow-pink-500/50 transition transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3 cursor-pointer"
+              className="w-full sm:w-auto px-10 py-4 sm:py-5 rounded-full bg-linear-to-r from-pink-600 via-rose-500 to-purple-600 text-white font-black text-base shadow-2xl shadow-pink-500/30 hover:shadow-pink-500/50 transition transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3 cursor-pointer"
             >
               <Camera className="w-5 h-5" />
               <span>Launch Photobooth</span>
@@ -101,11 +102,14 @@ export default function HomePage() {
                 <Camera className="w-6 h-6" />
               </div>
               <div className="flex items-center justify-between w-full">
-                <h3 className="text-base font-bold text-white">In-Person Session</h3>
+                <h3 className="text-base font-bold text-white">
+                  In-Person Session
+                </h3>
                 <ArrowRight className="w-4 h-4 text-pink-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition" />
               </div>
               <p className="text-xs text-zinc-400 mt-1.5 leading-relaxed">
-                Single webcam session with live AI background removal, custom scenes, and 4-shot automated burst.
+                Single webcam session with live AI background removal, custom
+                scenes, and 4-shot automated burst.
               </p>
             </button>
 
@@ -119,11 +123,14 @@ export default function HomePage() {
                 <Users className="w-6 h-6" />
               </div>
               <div className="flex items-center justify-between w-full">
-                <h3 className="text-base font-bold text-white">Long-Distance Duo</h3>
+                <h3 className="text-base font-bold text-white">
+                  Long-Distance Duo
+                </h3>
                 <ArrowRight className="w-4 h-4 text-purple-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition" />
               </div>
               <p className="text-xs text-zinc-400 mt-1.5 leading-relaxed">
-                Connect 2 webcams from different cities over WebRTC and merge side-by-side onto a shared backdrop.
+                Connect 2 webcams from different cities over WebRTC and merge
+                side-by-side onto a shared backdrop.
               </p>
             </button>
           </div>
@@ -143,18 +150,23 @@ export default function HomePage() {
               <span className="text-pink-400">Zero App Downloads.</span>
             </h2>
             <p className="text-sm text-zinc-400 leading-relaxed">
-              Every shoot produces an ultra high-resolution 4-frame printable card. 
-              Featuring customizable border frames, date stamps, film grain, and mechanical camera sound effects.
+              Every shoot produces an ultra high-resolution 4-frame printable
+              card. Featuring customizable border frames, date stamps, film
+              grain, and mechanical camera sound effects.
             </p>
 
             <div className="flex flex-col gap-2.5 mt-2">
               <div className="flex items-center gap-2.5 text-xs text-zinc-300">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Instant local browser storage & high-res PNG download</span>
+                <span>
+                  Instant local browser storage & high-res PNG download
+                </span>
               </div>
               <div className="flex items-center gap-2.5 text-xs text-zinc-300">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Client-side AI segmentation runs 100% in your browser</span>
+                <span>
+                  Client-side AI segmentation runs 100% in your browser
+                </span>
               </div>
               <div className="flex items-center gap-2.5 text-xs text-zinc-300">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -167,16 +179,16 @@ export default function HomePage() {
           <div className="relative">
             <div className="w-64 p-3 bg-zinc-100 text-zinc-900 rounded-2xl shadow-2xl shadow-pink-500/20 transform rotate-2 hover:rotate-0 transition duration-300 flex flex-col gap-2.5 border-4 border-white">
               {/* 4 Mock Photos */}
-              <div className="h-28 rounded-lg bg-gradient-to-tr from-pink-500 to-rose-400 overflow-hidden relative flex items-center justify-center text-white font-bold text-xs shadow-inner">
+              <div className="h-28 rounded-lg bg-linear-to-tr from-pink-500 to-rose-400 overflow-hidden relative flex items-center justify-center text-white font-bold text-xs shadow-inner">
                 <span>Pose #1 ✨</span>
               </div>
-              <div className="h-28 rounded-lg bg-gradient-to-tr from-purple-500 to-pink-500 overflow-hidden relative flex items-center justify-center text-white font-bold text-xs shadow-inner">
+              <div className="h-28 rounded-lg bg-linear-to-tr from-purple-500 to-pink-500 overflow-hidden relative flex items-center justify-center text-white font-bold text-xs shadow-inner">
                 <span>Pose #2 ✌️</span>
               </div>
-              <div className="h-28 rounded-lg bg-gradient-to-tr from-amber-500 to-pink-500 overflow-hidden relative flex items-center justify-center text-white font-bold text-xs shadow-inner">
+              <div className="h-28 rounded-lg bg-linear-to-tr from-amber-500 to-pink-500 overflow-hidden relative flex items-center justify-center text-white font-bold text-xs shadow-inner">
                 <span>Pose #3 💖</span>
               </div>
-              <div className="h-28 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-500 overflow-hidden relative flex items-center justify-center text-white font-bold text-xs shadow-inner">
+              <div className="h-28 rounded-lg bg-linear-to-tr from-indigo-500 to-purple-500 overflow-hidden relative flex items-center justify-center text-white font-bold text-xs shadow-inner">
                 <span>Pose #4 📸</span>
               </div>
 
@@ -198,7 +210,8 @@ export default function HomePage() {
               How It Works
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-md">
-              Step into the studio and print your memories in three effortless steps.
+              Step into the studio and print your memories in three effortless
+              steps.
             </p>
           </div>
 
@@ -208,9 +221,12 @@ export default function HomePage() {
               <div className="w-10 h-10 rounded-2xl bg-pink-500/10 text-pink-400 font-black text-sm flex items-center justify-center border border-pink-500/20">
                 01
               </div>
-              <h3 className="font-bold text-base text-white">Pick Your Backdrop</h3>
+              <h3 className="font-bold text-base text-white">
+                Pick Your Backdrop
+              </h3>
               <p className="text-xs text-zinc-400 leading-relaxed">
-                Choose from preset gradients, studio colors, aesthetic scenes, or upload your own image. AI removes your background live.
+                Choose from preset gradients, studio colors, aesthetic scenes,
+                or upload your own image. AI removes your background live.
               </p>
             </div>
 
@@ -221,7 +237,8 @@ export default function HomePage() {
               </div>
               <h3 className="font-bold text-base text-white">Strike 4 Poses</h3>
               <p className="text-xs text-zinc-400 leading-relaxed">
-                Click start! The automated 3-2-1 audio countdown triggers consecutive snapshots with authentic mechanical flash sounds.
+                Click start! The automated 3-2-1 audio countdown triggers
+                consecutive snapshots with authentic mechanical flash sounds.
               </p>
             </div>
 
@@ -232,7 +249,8 @@ export default function HomePage() {
               </div>
               <h3 className="font-bold text-base text-white">Export & Keep</h3>
               <p className="text-xs text-zinc-400 leading-relaxed">
-                Download your composed PNG photostrip directly to your device or sync to the Cloud Vault for sharing anywhere.
+                Download your composed PNG photostrip directly to your device or
+                sync to the Cloud Vault for sharing anywhere.
               </p>
             </div>
           </div>
@@ -241,8 +259,8 @@ export default function HomePage() {
 
       {/* 4. Ready To Shoot Callout */}
       <section className="py-16 px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto rounded-3xl bg-gradient-to-r from-pink-950/40 via-purple-950/40 to-zinc-900 border border-pink-500/30 p-8 sm:p-12 text-center flex flex-col items-center gap-6 shadow-2xl relative overflow-hidden">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-500/30">
+        <div className="max-w-4xl mx-auto rounded-3xl bg-linear-to-r from-pink-950/40 via-purple-950/40 to-zinc-900 border border-pink-500/30 p-8 sm:p-12 text-center flex flex-col items-center gap-6 shadow-2xl relative overflow-hidden">
+          <div className="w-14 h-14 rounded-2xl bg-linear-to-tr from-pink-600 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-500/30">
             <Heart className="w-7 h-7 text-white fill-white" />
           </div>
           <div className="flex flex-col gap-2 max-w-lg">
@@ -250,12 +268,13 @@ export default function HomePage() {
               Ready for Your Next Session?
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400">
-              No account required to start. Jump straight into the booth and capture unforgettable moments with your favorite person.
+              No account required to start. Jump straight into the booth and
+              capture unforgettable moments with your favorite person.
             </p>
           </div>
           <Link
             to="/photobooth"
-            className="px-10 py-4 rounded-full bg-gradient-to-r from-pink-600 via-rose-500 to-purple-600 text-white font-black text-sm shadow-xl shadow-pink-500/30 hover:shadow-pink-500/50 transition transform hover:scale-105 active:scale-95 flex items-center gap-2.5 cursor-pointer"
+            className="px-10 py-4 rounded-full bg-linear-to-r from-pink-600 via-rose-500 to-purple-600 text-white font-black text-sm shadow-xl shadow-pink-500/30 hover:shadow-pink-500/50 transition transform hover:scale-105 active:scale-95 flex items-center gap-2.5 cursor-pointer"
           >
             <Camera className="w-4 h-4" />
             <span>Enter Studio Now</span>

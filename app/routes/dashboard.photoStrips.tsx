@@ -15,11 +15,14 @@ import {
   LayoutDashboard,
   LogIn,
   Sparkles,
+  AlertCircle,
 } from "lucide-react";
-import { useQuery, useConvexAuth } from "convex/react";
+import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { getLocalPhotoStrips, deleteLocalPhotoStrip, type LocalPhotoStrip } from "../lib/localPhotoStorage";
 import { AuthModal } from "../components/auth/AuthModal";
+
+const MAX_CLOUD_PHOTOS = 5;
 
 export function meta() {
   return [
@@ -29,13 +32,14 @@ export function meta() {
 }
 
 export default function PhotoStripsGalleryPage() {
-  const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
+  const { isAuthenticated } = useConvexAuth();
 
   // If authenticated, fetch from Convex Cloud DB; otherwise load from local storage
   const userCloudStrips = useQuery(
     api.photoStrips.listMyPhotoStrips,
     isAuthenticated ? {} : "skip"
   );
+  const deleteCloudPhotoMutation = useMutation(api.photoStrips.deletePhotoStrip);
 
   const [localStrips, setLocalStrips] = useState<LocalPhotoStrip[]>([]);
   const [selectedStripUrl, setSelectedStripUrl] = useState<string | null>(null);
@@ -56,16 +60,25 @@ export default function PhotoStripsGalleryPage() {
     }
   };
 
+  const handleDeleteCloud = async (id: any) => {
+    if (confirm("Delete this saved photostrip from your permanent Cloud Vault?")) {
+      try {
+        await deleteCloudPhotoMutation({ id });
+      } catch (err) {
+        console.error("Failed to delete cloud photo:", err);
+      }
+    }
+  };
+
   const handleCopyLink = (url: string, id: string) => {
     navigator.clipboard.writeText(url);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Determine active strip list
-  const stripsCount = isAuthenticated
-    ? userCloudStrips?.length ?? 0
-    : localStrips.length;
+  const cloudCount = userCloudStrips?.length ?? 0;
+  const isCloudQuotaFull = cloudCount >= MAX_CLOUD_PHOTOS;
+  const stripsCount = isAuthenticated ? cloudCount : localStrips.length;
 
   return (
     <div className="min-h-screen bg-[#0d0c11] text-zinc-100 flex flex-col film-grain">
@@ -83,7 +96,7 @@ export default function PhotoStripsGalleryPage() {
             </div>
             <p className="text-xs sm:text-sm text-zinc-400 mt-1">
               {isAuthenticated
-                ? "Your permanent Cloud Vault collection synced across all devices."
+                ? `Your Cloud Vault collection (Max ${MAX_CLOUD_PHOTOS} photos per account).`
                 : "Photos stored locally in your browser cache. Log in to sync to the Cloud Vault."}
             </p>
           </div>
@@ -107,19 +120,30 @@ export default function PhotoStripsGalleryPage() {
           </div>
         </div>
 
-        {/* Status Bar */}
+        {/* Status Bar & Quota indicator */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-semibold text-zinc-300 w-fit shadow-sm">
-            {isAuthenticated ? (
-              <>
-                <Cloud className="w-4 h-4 text-purple-400" />
-                <span>Cloud Vault ({stripsCount})</span>
-              </>
-            ) : (
-              <>
-                <HardDrive className="w-4 h-4 text-pink-400" />
-                <span>Local Browser Storage ({stripsCount})</span>
-              </>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-semibold text-zinc-300 w-fit shadow-sm">
+              {isAuthenticated ? (
+                <>
+                  <Cloud className="w-4 h-4 text-purple-400" />
+                  <span>
+                    Cloud Vault: {cloudCount}/{MAX_CLOUD_PHOTOS} Photos
+                  </span>
+                </>
+              ) : (
+                <>
+                  <HardDrive className="w-4 h-4 text-pink-400" />
+                  <span>Local Browser Storage ({localStrips.length})</span>
+                </>
+              )}
+            </div>
+
+            {isAuthenticated && isCloudQuotaFull && (
+              <span className="px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber-300 text-[11px] font-bold flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+                <span>Vault Full (5/5 max)</span>
+              </span>
             )}
           </div>
 
@@ -151,7 +175,7 @@ export default function PhotoStripsGalleryPage() {
               </h3>
               <p className="text-xs text-zinc-400">
                 {isAuthenticated
-                  ? "Take shots in the photobooth while logged in to save them to your permanent cloud collection."
+                  ? "Take shots in the photobooth while logged in to save up to 5 photos in your permanent cloud collection."
                   : "Snap photos in the photobooth! Unregistered sessions are saved directly to this browser."}
               </p>
             </div>
@@ -208,6 +232,16 @@ export default function PhotoStripsGalleryPage() {
                       </div>
 
                       <div className="flex items-center gap-1.5">
+                        {/* Delete Cloud Photo Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCloud(strip._id)}
+                          title="Delete from Cloud Vault"
+                          className="p-2 rounded-lg bg-zinc-800 hover:bg-rose-950 hover:text-rose-400 text-zinc-400 transition cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+
                         {url && (
                           <>
                             <button

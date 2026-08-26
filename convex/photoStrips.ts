@@ -2,6 +2,8 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
+const MAX_CLOUD_STRIPS_PER_USER = 5;
+
 // Generate an upload URL for saving a photo strip directly to Convex file storage
 export const generateUploadUrl = mutation({
   args: {},
@@ -10,7 +12,7 @@ export const generateUploadUrl = mutation({
   },
 });
 
-// Save metadata for a newly uploaded photo strip
+// Save metadata for a newly uploaded photo strip with 5-photo quota check
 export const savePhotoStrip = mutation({
   args: {
     storageId: v.id("_storage"),
@@ -22,6 +24,26 @@ export const savePhotoStrip = mutation({
   },
   handler: async (ctx, args) => {
     const authUserId = await getAuthUserId(ctx);
+    if (!authUserId) {
+      throw new Error("Must be signed in to save photos to Convex Cloud.");
+    }
+
+    // Check user's current cloud photo count (max 5 photos limit)
+    const existingStrips = await ctx.db
+      .query("photoStrips")
+      .withIndex("by_user", (q) => q.eq("userId", authUserId))
+      .take(MAX_CLOUD_STRIPS_PER_USER + 1);
+
+    if (existingStrips.length >= MAX_CLOUD_STRIPS_PER_USER) {
+      // Clean up newly uploaded file from storage since quota was exceeded
+      await ctx.storage.delete(args.storageId);
+      if (args.thumbnailStorageId) {
+        await ctx.storage.delete(args.thumbnailStorageId);
+      }
+      throw new Error(
+        `Cloud limit reached: You can only save up to ${MAX_CLOUD_STRIPS_PER_USER} photos in your Cloud Vault. Please delete older strips to free up space.`
+      );
+    }
 
     const photoStripId = await ctx.db.insert("photoStrips", {
       storageId: args.storageId,
@@ -30,9 +52,39 @@ export const savePhotoStrip = mutation({
       frameTheme: args.frameTheme,
       isDuoMode: args.isDuoMode,
       isPublic: args.isPublic,
-      userId: authUserId || undefined,
+      userId: authUserId,
     });
+
     return photoStripId;
+  },
+});
+
+// Delete a photo strip from the user's cloud vault and free up storage
+export const deletePhotoStrip = mutation({
+  args: {
+    id: v.id("photoStrips"),
+  },
+  handler: async (ctx, args) => {
+    const authUserId = await getAuthUserId(ctx);
+    if (!authUserId) {
+      throw new Error("Unauthorized");
+    }
+
+    const strip = await ctx.db.get(args.id);
+    if (!strip || strip.userId !== authUserId) {
+      throw new Error("Photo strip not found or unauthorized.");
+    }
+
+    // Delete associated binary files from Convex storage
+    if (strip.storageId) {
+      await ctx.storage.delete(strip.storageId);
+    }
+    if (strip.thumbnailStorageId) {
+      await ctx.storage.delete(strip.thumbnailStorageId);
+    }
+
+    await ctx.db.delete(args.id);
+    return true;
   },
 });
 
@@ -58,7 +110,7 @@ export const getPhotoStrip = query({
   },
 });
 
-// List photo strips for the currently logged-in user
+// List photo strips for the currently logged-in user (up to max limit)
 export const listMyPhotoStrips = query({
   args: {},
   handler: async (ctx) => {
@@ -69,7 +121,7 @@ export const listMyPhotoStrips = query({
       .query("photoStrips")
       .withIndex("by_user", (q) => q.eq("userId", authUserId))
       .order("desc")
-      .take(50);
+      .take(MAX_CLOUD_STRIPS_PER_USER + 5);
 
     return await Promise.all(
       strips.map(async (strip) => {

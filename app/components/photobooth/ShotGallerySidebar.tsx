@@ -6,7 +6,8 @@ interface ShotGallerySidebarProps {
 }
 
 export function ShotGallerySidebar({ onProceedToCustomize }: ShotGallerySidebarProps) {
-  const { capturedShots, clearShots } = useBoothStore();
+  const capturedShots = useBoothStore((s) => s.capturedShots);
+  const clearShots = useBoothStore((s) => s.clearShots);
   const totalSlots = 4;
   const isComplete = capturedShots.length === totalSlots;
 

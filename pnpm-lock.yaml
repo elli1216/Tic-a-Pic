@@ -29,6 +29,9 @@ importers:
       framer-motion:
         specifier: ^12.4.7
         version: 12.43.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      gifshot:
+        specifier: ^0.4.5
+        version: 0.4.5
       isbot:
         specifier: ^5.1.36
         version: 5.2.1
@@ -1151,6 +1154,9 @@ packages:
   get-proto@1.0.1:
     resolution: {integrity: sha512-sTSfBjoXBp89JvIKIefqw7U2CCebsc74kiY6awiGogKtoSGbgjYE/G/+l9sF3MWFPNc9IcoOC4ODfKHfxFmp0g==}
     engines: {node: '>= 0.4'}
+
+  gifshot@0.4.5:
+    resolution: {integrity: sha512-oaOTT7patjxFFv7ptR0R0NNhqy3ZAmcLUQCjM/sTsvsQaUAlB2fHirLajcNAKJ6ufoVhdP+ZkXYvmUycHP1FNg==}
 
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
@@ -2708,6 +2714,8 @@ snapshots:
     dependencies:
       dunder-proto: 1.0.1
       es-object-atoms: 1.1.2
+
+  gifshot@0.4.5: {}
 
   gopd@1.2.0: {}
 

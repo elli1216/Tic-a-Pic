@@ -3,19 +3,20 @@ import { Link } from "react-router";
 import { Navbar } from "../components/layout/Navbar";
 import { useUserMedia } from "../hooks/useUserMedia";
 import { useBoothStore } from "../stores/useBoothStore";
-import { CameraCompositor, type CameraCompositorHandle } from "../components/photobooth/CameraCompositor";
-import { BackgroundSelector } from "../components/photobooth/BackgroundSelector";
-import { FilterSelector } from "../components/photobooth/FilterSelector";
+import {
+  CameraCompositor,
+  type CameraCompositorHandle,
+} from "../components/photobooth/CameraCompositor";
+import { StudioSidebar } from "../components/photobooth/StudioSidebar";
 import { CountdownOverlay } from "../components/photobooth/CountdownOverlay";
 import { ShotGallerySidebar } from "../components/photobooth/ShotGallerySidebar";
+import { StripCustomizerModal } from "../components/photobooth/StripCustomizerModal";
 import { soundFx } from "../lib/utils";
-import { saveLocalPhotoStrip } from "../lib/localPhotoStorage";
 import {
   Camera,
   FlipHorizontal,
   RotateCcw,
   Sparkles,
-  HardDrive,
   Film,
 } from "lucide-react";
 import confetti from "canvas-confetti";
@@ -23,7 +24,11 @@ import confetti from "canvas-confetti";
 export function meta() {
   return [
     { title: "Tic-a-Pic — Studio Photobooth" },
-    { name: "description", content: "Capture 4-shot retro photostrips with client-side AI background segmentation." },
+    {
+      name: "description",
+      content:
+        "Capture 4-shot retro photostrips with client-side AI background segmentation.",
+    },
   ];
 }
 
@@ -40,25 +45,22 @@ export default function PhotoboothPage() {
 
   const compositorRef = useRef<CameraCompositorHandle | null>(null);
 
-  const {
-    capturedShots,
-    addCapturedShot,
-    clearShots,
-    remainingCountdown,
-    setRemainingCountdown,
-    countdownSeconds,
-    setCountdownSeconds,
-    triggerFlash,
-    isMirrored,
-    setIsMirrored,
-    fps,
-    mode,
-    resetSession,
-    selectedFrameId,
-  } = useBoothStore();
+  const capturedShots = useBoothStore((s) => s.capturedShots);
+  const addCapturedShot = useBoothStore((s) => s.addCapturedShot);
+  const clearShots = useBoothStore((s) => s.clearShots);
+  const remainingCountdown = useBoothStore((s) => s.remainingCountdown);
+  const setRemainingCountdown = useBoothStore((s) => s.setRemainingCountdown);
+  const countdownSeconds = useBoothStore((s) => s.countdownSeconds);
+  const setCountdownSeconds = useBoothStore((s) => s.setCountdownSeconds);
+  const triggerFlash = useBoothStore((s) => s.triggerFlash);
+  const isMirrored = useBoothStore((s) => s.isMirrored);
+  const setIsMirrored = useBoothStore((s) => s.setIsMirrored);
+  const fps = useBoothStore((s) => s.fps);
+  const mode = useBoothStore((s) => s.mode);
+  const resetSession = useBoothStore((s) => s.resetSession);
 
   const [isShootingSequence, setIsShootingSequence] = useState(false);
-  const [savedLocally, setSavedLocally] = useState(false);
+  const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const isSequenceRunningRef = useRef(false);
 
   // Take a single photo with countdown
@@ -97,7 +99,13 @@ export default function PhotoboothPage() {
         }
       }, 1000);
     });
-  }, [countdownSeconds, setRemainingCountdown, triggerFlash, addCapturedShot, capturedShots.length]);
+  }, [
+    countdownSeconds,
+    setRemainingCountdown,
+    triggerFlash,
+    addCapturedShot,
+    capturedShots.length,
+  ]);
 
   // Automated 4-shot sequence
   const startFourShotSequence = useCallback(async () => {
@@ -105,7 +113,6 @@ export default function PhotoboothPage() {
     setIsShootingSequence(true);
     isSequenceRunningRef.current = true;
     clearShots();
-    setSavedLocally(false);
 
     for (let shotIndex = 1; shotIndex <= 4; shotIndex++) {
       if (!isSequenceRunningRef.current) break;
@@ -127,22 +134,12 @@ export default function PhotoboothPage() {
       spread: 60,
       origin: { y: 0.7 },
     });
+
+    // Automatically open the Strip Customizer Studio after 4 shots
+    setTimeout(() => {
+      setIsCustomizerOpen(true);
+    }, 600);
   }, [isShootingSequence, clearShots, takeSingleShot]);
-
-  // Save strip strictly to local storage
-  const handleSaveToLocalStorage = () => {
-    if (capturedShots.length === 0) return;
-
-    saveLocalPhotoStrip({
-      dataUrl: capturedShots[0].dataUrl,
-      cardLayout: "classic_strip_4x1",
-      frameTheme: selectedFrameId,
-      isDuoMode: mode === "duo_remote",
-    });
-
-    setSavedLocally(true);
-    setTimeout(() => setSavedLocally(false), 3500);
-  };
 
   // Stop sequence if component unmounts
   useEffect(() => {
@@ -150,6 +147,8 @@ export default function PhotoboothPage() {
       isSequenceRunningRef.current = false;
     };
   }, []);
+
+  const shotsDataUrls = capturedShots.map((s) => s.dataUrl);
 
   return (
     <div className="min-h-screen bg-[#0d0c11] text-zinc-100 flex flex-col film-grain">
@@ -163,7 +162,9 @@ export default function PhotoboothPage() {
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-bold uppercase tracking-wider text-zinc-300">
-                {mode === "duo_remote" ? "Duo Remote Mode" : "Photobooth Studio"}
+                {mode === "duo_remote"
+                  ? "Duo Remote Mode"
+                  : "Photobooth Studio"}
               </span>
             </div>
 
@@ -187,6 +188,7 @@ export default function PhotoboothPage() {
           <div className="flex items-center gap-2">
             {/* Mirror Toggle */}
             <button
+              type="button"
               onClick={() => setIsMirrored(!isMirrored)}
               title={isMirrored ? "Selfie Mirror: ON" : "Selfie Mirror: OFF"}
               className={`p-2 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
@@ -196,7 +198,9 @@ export default function PhotoboothPage() {
               }`}
             >
               <FlipHorizontal className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{isMirrored ? "Mirrored" : "Normal"}</span>
+              <span className="hidden sm:inline">
+                {isMirrored ? "Mirrored" : "Normal"}
+              </span>
             </button>
 
             {/* Countdown seconds selector */}
@@ -204,6 +208,7 @@ export default function PhotoboothPage() {
               {[3, 5, 10].map((sec) => (
                 <button
                   key={sec}
+                  type="button"
                   onClick={() => setCountdownSeconds(sec)}
                   className={`px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer ${
                     countdownSeconds === sec
@@ -233,6 +238,7 @@ export default function PhotoboothPage() {
 
             {/* Reset */}
             <button
+              type="button"
               onClick={resetSession}
               title="Reset Booth"
               className="p-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-zinc-400 hover:text-white transition cursor-pointer"
@@ -242,11 +248,16 @@ export default function PhotoboothPage() {
           </div>
         </div>
 
-        {/* Photobooth Main Grid: Camera Preview + Shot Sidebar */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 flex-1 min-h-[480px]">
-          {/* Main Camera Compositor Canvas View */}
-          <div className="lg:col-span-3 relative flex flex-col gap-3 min-h-[380px] sm:min-h-[500px]">
-            <div className="relative flex-1 w-full rounded-2xl overflow-hidden shadow-2xl">
+        {/* Photobooth 3-Column Studio Grid: Left Effects Sidebar + Center Camera Viewfinder + Right Shot Cartridge */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-130">
+          {/* Left Column: Reusable Effects & Styles Sidebar (3 cols) */}
+          <div className="lg:col-span-3 order-2 lg:order-1 h-full min-h-90">
+            <StudioSidebar />
+          </div>
+
+          {/* Center Column: Main Camera Compositor Canvas View (6 cols) */}
+          <div className="lg:col-span-6 order-1 lg:order-2 relative flex flex-col gap-3 min-h-95 sm:min-h-125">
+            <div className="relative flex-1 w-full rounded-2xl overflow-hidden shadow-2xl bg-zinc-950 flex flex-col">
               <CameraCompositor
                 ref={compositorRef}
                 videoElement={videoRef.current}
@@ -262,16 +273,22 @@ export default function PhotoboothPage() {
               <div className="absolute bottom-6 inset-x-0 flex items-center justify-center gap-4 z-20 pointer-events-auto">
                 {/* 4-Shot Auto Burst Trigger */}
                 <button
+                  type="button"
                   disabled={isShootingSequence || Boolean(videoError)}
                   onClick={startFourShotSequence}
                   className="group relative flex items-center gap-2.5 px-6 py-3.5 rounded-full bg-gradient-to-r from-pink-600 via-rose-500 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-black text-sm shadow-xl shadow-pink-500/30 hover:shadow-pink-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition transform hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4 animate-spin group-hover:animate-bounce" />
-                  <span>{isShootingSequence ? `Shooting (${capturedShots.length}/4)...` : "Start 4-Shot Shoot"}</span>
+                  <span>
+                    {isShootingSequence
+                      ? `Shooting (${capturedShots.length}/4)...`
+                      : "Start 4-Shot Shoot"}
+                  </span>
                 </button>
 
                 {/* Single Snap Button */}
                 <button
+                  type="button"
                   disabled={isShootingSequence || Boolean(videoError)}
                   onClick={takeSingleShot}
                   title="Take single snapshot"
@@ -281,28 +298,23 @@ export default function PhotoboothPage() {
                 </button>
               </div>
             </div>
-
-            {/* Background & Filter Selection Controls */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <BackgroundSelector />
-              <FilterSelector />
-            </div>
           </div>
 
-          {/* Side Photostrip 4-Slot Progress Gallery */}
-          <div className="lg:col-span-1 h-full min-h-[350px]">
+          {/* Right Column: 4-Slot Progress Cartridge Sidebar (3 cols) */}
+          <div className="lg:col-span-3 order-3 lg:order-3 h-full min-h-90">
             <ShotGallerySidebar
-              onProceedToCustomize={handleSaveToLocalStorage}
+              onProceedToCustomize={() => setIsCustomizerOpen(true)}
             />
-
-            {savedLocally && (
-              <div className="mt-2 p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center gap-2 justify-center shadow-lg animate-bounce">
-                <HardDrive className="w-4 h-4 text-emerald-400" />
-                <span>Saved to local browser storage!</span>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Phase 2: Strip Customizer & Decorator Modal Studio */}
+        <StripCustomizerModal
+          isOpen={isCustomizerOpen}
+          onClose={() => setIsCustomizerOpen(false)}
+          shots={shotsDataUrls}
+          isDuoMode={mode === "duo_remote"}
+        />
       </main>
     </div>
   );

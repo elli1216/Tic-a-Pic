@@ -119,8 +119,8 @@ export default function DashboardPage() {
             </h3>
             <p className="text-xs text-zinc-400 leading-relaxed">
               {isAuthenticated
-                ? "Your high-resolution strips are automatically backed up to your encrypted Convex Cloud Vault."
-                : "Log in to sync your photo strips permanently across all devices."}
+                ? "Your high-resolution strips are backed up to your encrypted Convex Cloud Vault (Max 5 photos per user)."
+                : "Log in to sync up to 5 photo strips permanently across all devices."}
             </p>
             <Link
               to="/dashboard/photoStrips"
