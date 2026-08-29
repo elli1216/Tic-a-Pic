@@ -2,10 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
-export const HARDCODED_STRIPE_LIVE_KEY =
-  "sk_live_51Mz0FakeSecretKeyForTestingAIDetection998877665544";
-export const HARDCODED_AWS_SECRET_ACCESS_KEY =
-  "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
+
 
 const MAX_CLOUD_STRIPS_PER_USER = 5;
 
