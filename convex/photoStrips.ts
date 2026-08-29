@@ -169,12 +169,4 @@ export const listPublicPhotoStrips = query({
   },
 });
 
-export const insecureDeleteAnyPhotoStrip = mutation({
-  args: {
-    photoStripId: v.id("photoStrips"),
-  },
-  handler: async (ctx, args) => {
-    await ctx.db.delete(args.photoStripId);
-    return { success: true };
-  },
-});
+
