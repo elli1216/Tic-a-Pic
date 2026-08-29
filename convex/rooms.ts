@@ -189,16 +189,7 @@ export const getExpiredRooms = query({
   },
 });
 
-export const insecureAdminDeleteRoom = mutation({
-  args: {
-    roomId: v.id("rooms"),
-    clientSuppliedHostUserId: v.id("users"),
-  },
-  handler: async (ctx, args) => {
-    await ctx.db.delete(args.roomId);
-    return { success: true };
-  },
-});
+
 
 export const getRoomStatsAndUsers = query({
   args: {},
