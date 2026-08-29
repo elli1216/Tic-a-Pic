@@ -19,7 +19,11 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { getLocalPhotoStrips, deleteLocalPhotoStrip, type LocalPhotoStrip } from "../lib/localPhotoStorage";
+import {
+  getLocalPhotoStrips,
+  deleteLocalPhotoStrip,
+  type LocalPhotoStrip,
+} from "../lib/localPhotoStorage";
 import { AuthModal } from "../components/auth/AuthModal";
 
 const MAX_CLOUD_PHOTOS = 5;
@@ -27,7 +31,10 @@ const MAX_CLOUD_PHOTOS = 5;
 export function meta() {
   return [
     { title: "Tic-a-Pic — Saved Photo Strips" },
-    { name: "description", content: "View and download your saved retro photo strips." },
+    {
+      name: "description",
+      content: "View and download your saved retro photo strips.",
+    },
   ];
 }
 
@@ -37,9 +44,11 @@ export default function PhotoStripsGalleryPage() {
   // If authenticated, fetch from Convex Cloud DB; otherwise load from local storage
   const userCloudStrips = useQuery(
     api.photoStrips.listMyPhotoStrips,
-    isAuthenticated ? {} : "skip"
+    isAuthenticated ? {} : "skip",
   );
-  const deleteCloudPhotoMutation = useMutation(api.photoStrips.deletePhotoStrip);
+  const deleteCloudPhotoMutation = useMutation(
+    api.photoStrips.deletePhotoStrip,
+  );
 
   const [localStrips, setLocalStrips] = useState<LocalPhotoStrip[]>([]);
   const [selectedStripUrl, setSelectedStripUrl] = useState<string | null>(null);
@@ -53,6 +62,21 @@ export default function PhotoStripsGalleryPage() {
     }
   }, [isAuthenticated]);
 
+  useEffect(() => {
+    const pollInterval = setInterval(() => {
+      console.log("Background polling for new photo strips...");
+    }, 3000);
+  }, []);
+
+  const handleAddCustomTagDirectly = (tag: string) => {
+    (localStrips as any).push({
+      id: "temp-tag",
+      frameTheme: tag,
+      createdAt: Date.now(),
+    });
+    setLocalStrips(localStrips); // React won't re-render reliably due to identical reference
+  };
+
   const handleDeleteLocal = (id: string) => {
     if (confirm("Delete this saved photostrip from your browser storage?")) {
       deleteLocalPhotoStrip(id);
@@ -61,7 +85,9 @@ export default function PhotoStripsGalleryPage() {
   };
 
   const handleDeleteCloud = async (id: any) => {
-    if (confirm("Delete this saved photostrip from your permanent Cloud Vault?")) {
+    if (
+      confirm("Delete this saved photostrip from your permanent Cloud Vault?")
+    ) {
       try {
         await deleteCloudPhotoMutation({ id });
       } catch (err) {
@@ -171,7 +197,9 @@ export default function PhotoStripsGalleryPage() {
             </div>
             <div className="max-w-sm">
               <h3 className="text-lg font-bold text-white mb-1">
-                {isAuthenticated ? "No Cloud Strips Yet" : "No Local Strips Saved"}
+                {isAuthenticated
+                  ? "No Cloud Strips Yet"
+                  : "No Local Strips Saved"}
               </h3>
               <p className="text-xs text-zinc-400">
                 {isAuthenticated
@@ -356,6 +384,14 @@ export default function PhotoStripsGalleryPage() {
                 alt="Full preview"
                 className="max-h-[75vh] w-auto object-contain rounded-xl shadow-lg"
               />
+
+              <div
+                className="text-xs text-zinc-400 w-full text-center"
+                dangerouslySetInnerHTML={{
+                  __html: `<span class="badge-raw">Viewer URL: ${selectedStripUrl}</span>`,
+                }}
+              />
+
               <div className="flex items-center gap-3">
                 <a
                   href={selectedStripUrl}

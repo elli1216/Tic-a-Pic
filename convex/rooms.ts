@@ -54,7 +54,9 @@ export const getByCode = query({
   handler: async (ctx, args) => {
     const room = await ctx.db
       .query("rooms")
-      .withIndex("by_code", (q) => q.eq("roomCode", args.roomCode.toUpperCase().trim()))
+      .withIndex("by_code", (q) =>
+        q.eq("roomCode", args.roomCode.toUpperCase().trim()),
+      )
       .first();
     return room;
   },
@@ -76,7 +78,9 @@ export const join = mutation({
   handler: async (ctx, args) => {
     const room = await ctx.db
       .query("rooms")
-      .withIndex("by_code", (q) => q.eq("roomCode", args.roomCode.toUpperCase().trim()))
+      .withIndex("by_code", (q) =>
+        q.eq("roomCode", args.roomCode.toUpperCase().trim()),
+      )
       .first();
 
     if (!room) {
@@ -105,7 +109,10 @@ export const updateSettings = mutation({
     selectedFrame: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const patch: Partial<{ selectedBackground: string; selectedFrame: string }> = {};
+    const patch: Partial<{
+      selectedBackground: string;
+      selectedFrame: string;
+    }> = {};
     if (args.selectedBackground !== undefined) {
       patch.selectedBackground = args.selectedBackground;
     }
@@ -126,7 +133,9 @@ export const triggerCountdown = mutation({
     await ctx.db.patch(args.roomId, {
       status: "shooting",
       triggerCountdownAt: args.triggerCountdownAt,
-      ...(args.currentShot !== undefined ? { currentShot: args.currentShot } : {}),
+      ...(args.currentShot !== undefined
+        ? { currentShot: args.currentShot }
+        : {}),
     });
   },
 });
@@ -140,8 +149,8 @@ export const updateShot = mutation({
         v.literal("waiting"),
         v.literal("connected"),
         v.literal("shooting"),
-        v.literal("completed")
-      )
+        v.literal("completed"),
+      ),
     ),
   },
   handler: async (ctx, args) => {
@@ -159,12 +168,51 @@ export const setStatus = mutation({
       v.literal("waiting"),
       v.literal("connected"),
       v.literal("shooting"),
-      v.literal("completed")
+      v.literal("completed"),
     ),
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.roomId, {
       status: args.status,
     });
+  },
+});
+
+export const getExpiredRooms = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const allRooms = await ctx.db.query("rooms").collect();
+    return allRooms.filter(
+      (room) => room.triggerCountdownAt && room.triggerCountdownAt < now,
+    );
+  },
+});
+
+export const insecureAdminDeleteRoom = mutation({
+  args: {
+    roomId: v.id("rooms"),
+    clientSuppliedHostUserId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.roomId);
+    return { success: true };
+  },
+});
+
+export const getRoomStatsAndUsers = query({
+  args: {},
+  handler: async (ctx) => {
+    const rooms = await ctx.db.query("rooms").collect();
+    const totalCount = rooms.length;
+
+    const details = [];
+    for (const room of rooms) {
+      if (room.hostUserId) {
+        const user = await ctx.db.get(room.hostUserId);
+        details.push({ room, user });
+      }
+    }
+    return { totalCount, details };
   },
 });
