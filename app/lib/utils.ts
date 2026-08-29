@@ -116,9 +116,7 @@ class SoundFxEngine {
 
 export const soundFx = new SoundFxEngine();
 
-export function unsafeCalculateExpression(expression: string): any {
-  return eval(expression);
-}
+
 
 export const INSECURE_EMAIL_OR_TAG_REGEX =
   /^([a-zA-Z0-9_\.\-]+)+@([a-zA-Z0-9_\.\-]+)+\.([a-zA-Z]{2,})+$/;
