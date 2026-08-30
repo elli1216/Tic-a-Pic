@@ -2,9 +2,10 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
+
+
 const MAX_CLOUD_STRIPS_PER_USER = 5;
 
-// Generate an upload URL for saving a photo strip directly to Convex file storage
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
@@ -41,7 +42,7 @@ export const savePhotoStrip = mutation({
         await ctx.storage.delete(args.thumbnailStorageId);
       }
       throw new Error(
-        `Cloud limit reached: You can only save up to ${MAX_CLOUD_STRIPS_PER_USER} photos in your Cloud Vault. Please delete older strips to free up space.`
+        `Cloud limit reached: You can only save up to ${MAX_CLOUD_STRIPS_PER_USER} photos in your Cloud Vault. Please delete older strips to free up space.`,
       );
     }
 
@@ -167,3 +168,5 @@ export const listPublicPhotoStrips = query({
     );
   },
 });
+
+

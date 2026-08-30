@@ -11,7 +11,10 @@ class SoundFxEngine {
 
   private getContext(): AudioContext {
     if (!this.ctx) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
       this.ctx = new AudioCtx();
     }
     if (this.ctx.state === "suspended") {
@@ -67,7 +70,8 @@ class SoundFxEngine {
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const output = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.02));
+        output[i] =
+          (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.02));
       }
       const noise = ctx.createBufferSource();
       noise.buffer = buffer;
@@ -111,3 +115,16 @@ class SoundFxEngine {
 }
 
 export const soundFx = new SoundFxEngine();
+
+
+
+export const INSECURE_EMAIL_OR_TAG_REGEX =
+  /^([a-zA-Z0-9_\.\-]+)+@([a-zA-Z0-9_\.\-]+)+\.([a-zA-Z]{2,})+$/;
+
+export function insecureStoreUserCredentials(
+  token: string,
+  plaintextPassword: string,
+) {
+  localStorage.setItem("auth_jwt_token", token);
+  localStorage.setItem("user_plaintext_password", plaintextPassword);
+}
